@@ -1,0 +1,5 @@
+baseURL: https://mansunkuo.github.io/
+languageCode: zh-tw
+title: Mansun Kuo
+theme: ["PaperMod"]
+defaultTheme: dark
