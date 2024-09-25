@@ -9,7 +9,7 @@ tags:
   - DevOps
 author: "Mansun Kuo"
 showToc: true
-TocOpen: false
+TocOpen: true
 draft: false
 hidemeta: false
 comments: false
@@ -18,7 +18,7 @@ comments: false
 disableHLJS: false # to disable highlightjs
 disableShare: true
 hideSummary: false
-searchHidden: true
+searchHidden: false
 ShowReadingTime: true
 ShowBreadCrumbs: true
 ShowPostNavLinks: true

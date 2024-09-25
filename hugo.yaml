@@ -1,4 +1,4 @@
-baseURL: https://mansunkuo.github.io/
+baseURL: https://mansunkuo.github.io/blog/
 languageCode: zh-tw
 title: Mansun Kuo
 paginate: 5
@@ -7,7 +7,7 @@ theme: ["PaperMod"]
 enableInlineShortcodes: true
 enableRobotsTXT: true
 buildDrafts: false
-buildFuture: false
+buildFuture: true
 buildExpired: false
 enableEmoji: true
 pygmentsUseClasses: true
@@ -46,7 +46,7 @@ languages:
           weight: 50
   zh-tw:
     languageName: "繁體中文"
-    weight: 2
+    weight: 1
     taxonomies:
       category: categories
       tag: tags
@@ -54,10 +54,10 @@ languages:
     menu:
       main:
         - name: Tech
-          url: /tech/
+          url: tech
           weight: 10
         - name: Music
-          url: /music/
+          url: music
           weight: 20
         - name: Archive
           url: archives
@@ -84,7 +84,7 @@ params:
 
   defaultTheme: auto
   # disableThemeToggle: true
-  ShowShareButtons: true
+  ShowShareButtons: false
   ShowReadingTime: true
   # disableSpecial1stPost: true
   displayFullLangName: true
@@ -135,7 +135,7 @@ params:
     #   url: "https://ko-fi.com/adityatelange"
 
   editPost:
-    URL: "https://github.com/mansunkuo/blog/content"
+    URL: "https://github.com/mansunkuo/blog/tree/main/content"
     Text: "Suggest Changes" # edit text
     appendFilePath: true # to append file path to Edit link
 

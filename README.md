@@ -1,5 +1,5 @@
 # blog
-A place to put some articles.
+https://mansunkuo.github.io/blog/
 
 ## Dev
 Start Hugo’s development server:

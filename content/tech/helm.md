@@ -1,10 +1,11 @@
 ---
 title: 'Helm'
-date: 2024-09-09T07:12:18+08:00
+date: 2024-10-23T07:12:18+08:00
 # weight: 1
 # aliases: ["/first"]
 tags:
   - Helm
+  - Kubernetes
 author: "Mansun Kuo"
 showToc: true
 TocOpen: true
@@ -16,7 +17,7 @@ comments: false
 disableHLJS: false # to disable highlightjs
 disableShare: true
 hideSummary: false
-searchHidden: true
+searchHidden: false
 ShowReadingTime: true
 ShowBreadCrumbs: true
 ShowPostNavLinks: true
