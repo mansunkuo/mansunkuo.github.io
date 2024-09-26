@@ -1,5 +1,5 @@
 ---
-title: 'Helm'
+title: 'Bring Your Helm Chart to the Wonderful World'
 date: 2024-10-23T07:12:18+08:00
 # weight: 1
 # aliases: ["/first"]
@@ -17,6 +17,7 @@ comments: false
 disableHLJS: false # to disable highlightjs
 disableShare: true
 hideSummary: false
+Summary: A workshop of Helm in Kubernetes Summit 2024
 searchHidden: false
 ShowReadingTime: true
 ShowBreadCrumbs: true
@@ -1217,10 +1218,128 @@ Key Differences Between OCI Registries and Helm Chart Repositories:
 - Traditional Helm repositories (e.g., https://charts.example.com) use the helm repo add command to register the repository URL with Helm. This allows Helm to search, fetch, and install charts from the repository using a simple chart name and version.
 - Repositories store a index.yaml file that acts as a catalog of all the charts, which Helm uses to fetch charts by name.
 2. OCI Registries:
-- OCI registries are more akin to Docker image registries (e.g., Docker Hub), where charts are stored as OCI artifacts.
+- OCI registries are more similar to Docker image registries (e.g., Docker Hub), where charts are stored as OCI artifacts.
 - You don’t need an index file (like index.yaml) or a repository registration step (helm repo add). Instead, you can directly interact with the OCI registry using commands like helm pull, helm push, and helm install with the oci:// scheme.
 
 With OCI registries, Helm interacts directly with charts using the oci:// scheme, bypassing the need for helm repo add and index.yaml files. This is more similar to working with Docker images than traditional Helm chart repositorie
+
+### Apply the dependency
+Let' add a place holder of in values.yaml
+
+{{< collapse openByDefault=true summary="git diff charts/myapi/values.yaml" >}}
+```diff
+diff --git a/charts/myapi/values.yaml b/charts/myapi/values.yaml
+index 288c7d3..a1e50b7 100644
+--- a/charts/myapi/values.yaml
++++ b/charts/myapi/values.yaml
+@@ -110,3 +110,6 @@ nodeSelector: {}
+ tolerations: []
+ 
+ affinity: {}
++
++secrets:
++  passcode: ""
+\ No newline at end of file
+```
+{{< /collapse >}}
+
+And modify our passcode:
+{{< collapse openByDefault=true summary="git diff charts/myapi/templates/secret.yaml" >}}
+```diff
+diff --git a/charts/myapi/templates/secret.yaml b/charts/myapi/templates/secret.yaml
+index 6cd83d6..a81ce6b 100644
+--- a/charts/myapi/templates/secret.yaml
++++ b/charts/myapi/templates/secret.yaml
+@@ -1,9 +1,12 @@
++{{- $fullname := include "myapi.fullname" . }}
+ apiVersion: v1
+ kind: Secret
+ metadata:
+-  name: {{ include "myapi.fullname" . }}
++  name: {{ $fullname }}
+   labels:
+     {{- include "myapi.labels" . | nindent 4 }}
+ type: Opaque
+ data:
+-  passcode: {{ randAlphaNum  10 | b64enc }}  # Generate a random 10-digit passcode and encode it in base64
++  # Generate secret password or retrieve one if already created.
++  # https://github.com/bitnami/charts/blob/07062ee01382e24b8204b27083ff3e8102110c2f/bitnami/common/templates/_secrets.tpl#L66-L142
++  passcode: {{ include "common.secrets.passwords.manage" (dict "secret" $fullname "key" "passcode" "providedValues" (list "secrets.passcode" ) "length" 10 "strong" false "chartName" "chartName" "context" $) }}
+```
+{{< /collapse >}}
+
+Let's break down the changes:
+1. Introduction of a Variable for Fullname:
+
+The `fullname` is now assigned to the `$fullname` variable with the line `{{- $fullname := include "myapi.fullname" . }}`. This allows for reusing `$fullname` throughout the template instead of repeating `{{ include "myapi.fullname" . }}` every time you need the full name. It improves readability when the full name needs to be used in multiple places.
+
+2. Replacement of Simple Random Password with Managed Secret:
+
+The simple random password generation (`randAlphaNum 10`) is replaced with Bitnami's `common.secrets.passwords.manage` function from the Bitnami `common` library. The function is used to generate or retrieve a password. If the secret already exists (e.g., during an upgrade), it will retrieve the existing password, preventing unnecessary password changes. This enhances the security and flexibility of secret management. The secret can be reused across upgrades, ensuring consistency without generating new passwords every time.
+
+Let's uninstall and install it again. We will get a random passcode:
+
+
+{{< collapse openByDefault=true summary="helm upgrade --install myapi-release ./charts/myapi" >}}
+```bash
+❯ helm uninstall myapi-release
+release "myapi-release" uninstalled
+❯ helm upgrade --install myapi-release ./charts/myapi
+Release "myapi-release" does not exist. Installing it now.
+NAME: myapi-release
+LAST DEPLOYED: Fri Sep 27 01:35:49 2024
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=myapi,app.kubernetes.io/instance=myapi-release" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
+❯ kubectl get secret myapi-release -o jsonpath="{.data.passcode}" | base64 --decode
+x8ZdR8zBsQ%
+```
+{{< /collapse >}}
+
+
+We can also assigned a desired value for it. When we install it again, the passcode is still the same.
+{{< collapse openByDefault=true summary="helm upgrade --install myapi-release ./charts/myapi --set secrets.passcode=konosuba" >}}
+```bash
+❯ helm uninstall myapi-release
+release "myapi-release" uninstalled
+❯ helm upgrade --install myapi-release ./charts/myapi --set secrets.passcode=konosuba
+Release "myapi-release" does not exist. Installing it now.
+NAME: myapi-release
+LAST DEPLOYED: Fri Sep 27 01:38:49 2024
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=myapi,app.kubernetes.io/instance=myapi-release" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
+❯ kubectl get secret myapi-release -o jsonpath="{.data.passcode}" | base64 --decode
+konosuba%
+❯ helm upgrade --install myapi-release ./charts/myapi
+Release "myapi-release" has been upgraded. Happy Helming!
+NAME: myapi-release
+LAST DEPLOYED: Fri Sep 27 01:39:06 2024
+NAMESPACE: default
+STATUS: deployed
+REVISION: 2
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=myapi,app.kubernetes.io/instance=myapi-release" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
+❯ kubectl get secret myapi-release -o jsonpath="{.data.passcode}" | base64 --decode
+konosuba%
+```
+{{< /collapse >}}
 
 
 ## Referernces
@@ -1228,3 +1347,4 @@ With OCI registries, Helm interacts directly with charts using the oci:// scheme
 - [Artifact Hub - Helm charts repositories](https://artifacthub.io/docs/topics/repositories/helm-charts/)
 - https://helm.sh/docs/topics/chart_repository/
 - https://helm.sh/docs/topics/registries/
+- https://helm.sh/docs/chart_template_guide/debugging/
