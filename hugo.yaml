@@ -145,10 +145,9 @@ params:
   # icon: icon.png
   # iconHeight: 35
 
-  # analytics:
-  #     google:
-  #         SiteVerificationTag: "XYZabc"
-
+  analytics:
+      google:
+          SiteVerificationTag: "4kq1OcXma08EnipH7dy6PM49oygPrLmoDCjDxxrAAtM"
   assets:
     disableHLJS: true
   #     favicon: "<link / abs url>"
