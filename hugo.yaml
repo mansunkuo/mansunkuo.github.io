@@ -1,7 +1,8 @@
-baseURL: https://mansunkuo.github.io/blog/
+baseURL: https://mansunkuo.github.io/
 languageCode: zh-tw
 title: Mansun Kuo
-paginate: 5
+pagination:
+  pagerSize: 5
 theme: ["PaperMod"]
 
 enableInlineShortcodes: true
@@ -68,6 +69,15 @@ languages:
         - name: Tags
           url: tags/
           weight: 50
+    params:
+      homeInfoParams:
+        Title: "lí hó 🍺"
+        Content: |
+          歡迎來到我的個人部落格！我是一名對技術充滿熱情的軟體開發者，熱衷於分享知識、探索創新解決方案，並深入研究開源項目。
+          這個空間專門用來記錄我在雲端技術、軟體架構、DevOps、數據工程、機器學習/人工智慧等方面的旅程。
+
+          除了技術探索之外，我也會分享一些我最喜愛的歌曲和相關的想法。我相信你會和我一樣喜歡這些音樂。
+          希望你能在這裡找到激發興趣的內容。隨時歡迎瀏覽我的文章，並在GitHub或LinkedIn上與我聯繫，一起加入討論！
 
 
 outputs:
@@ -114,8 +124,14 @@ params:
         url: tags
 
   homeInfoParams:
-    Title: "Hi there \U0001F44B"
-    Content: Welcome to my blog
+    Title: "Hi there 🍺"
+    Content: |
+      Welcome to my personal blog! I'm a tech enthusiast and software developer passionate 
+      about sharing knowledge, exploring innovative solutions, and diving deep into open-source projects. 
+      This space is dedicated to documenting my journey in the cloud, software architecture, DevOps, data engineering, ML/AI, and more.
+
+      In addition to my technical explorations, I'll also share some of my favorite songs and related thoughts. I trust you'll enjoy them as much as I do.
+      I hope you'll find something here to spark your interest. Feel free to explore my posts, connect with me on GitHub or LinkedIn, and join the conversation!
 
   socialIcons:
     - name: linkedin
@@ -148,6 +164,7 @@ params:
   analytics:
       google:
           SiteVerificationTag: "4kq1OcXma08EnipH7dy6PM49oygPrLmoDCjDxxrAAtM"
+
   assets:
     disableHLJS: true
   #     favicon: "<link / abs url>"

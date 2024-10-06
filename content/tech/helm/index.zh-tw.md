@@ -1,11 +1,12 @@
 ---
-title: 'Bring Your Helm Chart to the Wonderful World'
+title: '為美好的世界獻上 Helm Chart'
 date: 2024-10-23T07:12:18+08:00
 # weight: 1
 # aliases: ["/first"]
 tags:
   - Helm
   - Kubernetes
+  - 工作坊
 author: "Mansun Kuo"
 showToc: true
 TocOpen: true
@@ -17,7 +18,8 @@ comments: false
 disableHLJS: false # to disable highlightjs
 disableShare: true
 hideSummary: false
-Summary: A workshop of Helm in Kubernetes Summit 2024
+Summary: |
+  體驗工作坊 - Kubernetes Summit 2024
 searchHidden: false
 ShowReadingTime: true
 ShowBreadCrumbs: true
@@ -26,7 +28,7 @@ ShowWordCount: false
 ShowRssButtonInSectionTermList: true
 UseHugoToc: true
 cover:
-    image: "<image path/url>" # image path/url
+    image: "https://ccmsassets.ithome.com.tw/2023/8/4/df264c1c-5add-4173-a8c6-71330ff65537.jpg" # image path/url
     alt: "<alt text>" # alt text
     caption: "<text>" # display caption under cover
     relative: false # when using page bundles set this to true
@@ -37,9 +39,11 @@ cover:
 #     appendFilePath: true # to append file path to Edit link
 ---
 
-## Lab 1: Create your first Helm chart
+這篇文章是這次我在台灣 [Kubnetes Summit 2024](https://k8s.ithome.com.tw/2024/workshop-page/3261) 所帶領的工作坊，在這個實戰工作坊中，我們會介紹一個標準的 Helm Chart 的目錄架構以及裡面各個元件的基本設定，帶著您從無到有建立一個自己的 Helm Chart，使用 Helm Template 以及 Helm dependency 寫出容易使用以及可擴展的 Helm Chart，並實際使用 GitHub Page 以及 GitHub Action 讓您最新版本的 Helm Chart 可以透過 Helm Repo更容易分享給別人，最後會再讓大家實際去使用自己或是其他學員所包好的 Helm Chart 來部署在自己的 Kubernetes 叢集，順便熟悉一些重要的指令以及使用上的一些小技巧。文章很長，還請您善用目錄來幫您快速跳轉到你想去的地方。
 
-Let's create a folder called `k8s-summit-2024`:
+## 練習一: 創建您的第一個 Helm Chart
+
+讓我們新增一個名為 `k8s-summit-2024` 的資料夾：
 ```bash
 REPO_NAME=k8s-summit-2024
 mkdir $REPO_NAME
@@ -47,13 +51,13 @@ cd $REPO_NAME
 git init
 ```
 
-To create a new Helm chart called myapi, you can use the following command:
+要新增一個名為 myapi 的 Helm Chart，可以使用以下命令：
 ```bash
 mkdir charts
 helm create charts/myapi
 ```
 
-This will create the following directory structure:
+Helm 會生成一個新 Chart 的默認結構，其中包含幾個文件和目錄：
 ```bash
 charts/myapi/
   ├── charts/
@@ -63,7 +67,7 @@ charts/myapi/
   └── ...
 ```
 
-Helm generates a default structure for a new chart with several files and directories. Here's an explanation of each file and folder:
+以下是每個檔案和資料夾的解釋：
 
 ### Common files in a Helm chart
 #### Chart.yaml
@@ -436,7 +440,7 @@ replicaset.apps/myapi-release-54b5c4d9c8   1         1         1       2m19s
 ```
 {{< /collapse >}}
 
-## Lab 2: Modify it as an API
+## Exercise 2: Modify it as an API
 In this lab, we will modify this Helm chart as an API instance of [FastAPI](https://fastapi.tiangolo.com/). 
 
 ### Add an API endpoint
@@ -909,7 +913,7 @@ myapi-release   default         4               2024-09-18 02:38:42.936136839 +0
 
 It populate a new revision from the revision you assigned.
 
-## Lab 3: Why my secret is not updated
+## Exercise 3: Why my secret is not updated
 Let's add a random passcode in out API.
 
 ### Add a random secret and encode it
@@ -1139,7 +1143,7 @@ spec:
 ```
 {{< /collapse >}} 
 
-## Lab 4: Add a Helm dependency
+## Exercise 4: Add a Helm dependency
 [Helm dependency](https://helm.sh/docs/helm/helm_dependency/) manage the dependencies of a chart. Helm charts store their dependencies in 'charts/'. For chart developers, it is often easier to manage dependencies in 'Chart.yaml' which declares all dependencies.
 
 The dependency commands operate on that file, making it easy to synchronize between the desired dependencies and the actual dependencies stored in the 'charts/' directory.
@@ -1341,10 +1345,243 @@ konosuba%
 ```
 {{< /collapse >}}
 
+## Exercise 5: Chart Releaser Action to Automate GitHub Page Charts
+###  Setup Your GitHub Repository
+In this lab, we will publish out chart to GItHib pags with GitHub Action. First of all, you will need a new repository called `k8s-summit-2024`. Please follow step 1, 2, 3 and 5 in [Quickstart for GitHub Pages](https://docs.github.com/en/pages/quickstart) to creak a blank repository called `k8s-summit-2024`:
+- In the upper-right corner of any page, select `+`, then click **New repository**.
+- Enter `k8s-summit-2024` as the repository name.
+- Choose `Public` as the  repository visibility.
+- Add an optional description.
+- Click **Create repository**. 
+
+![create-repo](./create-repo.png)
+
+
+Follow the instruction of "push an existing repository from the command line". The `$USER` will be your GitHub account in the instruction:
+
+```bash
+git remote add origin git@github.com:$USER/k8s-summit-2024.git
+git branch -M main
+git push -u origin main
+```
+
+You also need a branch called `gh-pages` to make it work. We will use this branch to host our charts. Let's create and checkout a new branch and push it to our repository. Remember to switch back to your main branch.
+
+```bash
+git checkout -b gh-pages
+git push origin gh-pages
+git checkout main
+```
+
+Follow step 6 to step 9 in [Quickstart for GitHub Pages](https://docs.github.com/en/pages/quickstart) to config your gh-pages:
+- Under your repository name, click  Settings. If you cannot see the "Settings" tab, select the  dropdown menu, then click Settings.
+- In the "Code and automation" section of the sidebar, click  Pages.
+- Under "Build and deployment", under "Source", select Deploy from a branch.
+- Under "Build and deployment", under "Branch", use the branch dropdown menu and select `gh-pages`.
+![gh-pages](./gh-pages.png)
+
+
+### Final Adjustment for Your Helm Chart
+
+Copy and paste following lines to add `charts/myapi/README.md` for your Helm chart. Remember to replace `ORGNAME` as your GitHub account.
+```markdown
+# Define variables
+ALIAS=$USER-k8s-summit-2024
+ORGNAME=$USER
+CHART_NAME=myapi
+REPO_NAME=k8s-summit-2024
+
+# Use sed to replace placeholders and redirect to the chart
+sed -e "s/<alias>/$ALIAS/g" \
+    -e "s/<orgname>/$ORGNAME/g" \
+    -e "s/<chart-name>/$CHART_NAME/g" \
+    -e "s/helm-charts/$REPO_NAME/g" << 'EOT' > charts/$CHART_NAME/README.md
+## Usage
+
+[Helm](https://helm.sh) must be installed to use the charts.  Please refer to
+Helm's [documentation](https://helm.sh/docs) to get started.
+
+Once Helm has been set up correctly, add the repo as follows:
+
+    helm repo add <alias> https://<orgname>.github.io/helm-charts
+
+If you had already added this repo earlier, run `helm repo update` to retrieve the latest versions of the packages.  You can then run `helm search repo <alias>` to see the charts.
+
+To install the <chart-name> chart:
+
+    helm install <orgname>-<chart-name> <alias>/<chart-name>
+
+To uninstall the chart:
+
+    helm delete <orgname>-<chart-name>
+EOT
+```
+
+Add a README for your whole repository.
+```bash
+cat << 'EOT' > README.md
+# k8s-summit-2024
+A sample helm chart repo created in k8s summit 2024.
+EOT
+```
+
+Add your name into the API to make it easier to be recognize:
+{{< collapse openByDefault=true summary="git diff charts/myapi/templates/configmap.yaml" >}}
+```diff
+diff --git a/charts/myapi/templates/configmap.yaml b/charts/myapi/templates/configmap.yaml
+index 0449698..a554438 100644
+--- a/charts/myapi/templates/configmap.yaml
++++ b/charts/myapi/templates/configmap.yaml
+@@ -13,7 +13,7 @@ data:
+ 
+     @app.get("/")
+     def read_root():
+-        return {"Hello": f"Your pass code is {os.environ.get('PASSCODE')}"}
++        return {"Hello from mansunkuo": f"Your pass code is {os.environ.get('PASSCODE')}"}
+ 
+     @app.get("/hello/{user}")
+     def hello(user: str):
+```
+{{< /collapse >}}
+
+
+### Configure GitHub Actions Workflow
+
+Copy and past following lines to create GitHub Actions workflow file in the `main` branch at `.github/workflows/release.yml`:
+```yaml
+mkdir -p .github/workflows
+cat << 'EOT' > .github/workflows/release.yml
+name: Release Charts
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.6.0
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+EOT
+```
+You can find this GitHub Actions workflow configuration file in [GitHub Actions Workflow](https://helm.sh/docs/howto/chart_releaser_action/#github-actions-workflow).
+The above configuration uses [@helm/chart-releaser-action](https://github.com/helm/chart-releaser-action) to turn your GitHub project into a self-hosted Helm chart repo. It does this - during every push to main - by checking each chart in your project, and whenever there's a new chart version, creates a corresponding GitHub release named for the chart version, adds Helm chart artifacts to the release, and creates or updates an index.yaml file with metadata about those releases, which is then hosted on GitHub pages.
+
+
+When you are ready, add all changes into the commit and push to the remote main branch:
+```bash
+git add --all
+git commit -m lab5
+git push origin main
+```
+
+Wait for a while for the GitHub Actions workflow. You will have an [index.yaml](https://mansunkuo.github.io/k8s-summit-2024/index.yaml) appear in the root of both gh-pages branch and pages like this:
+```yaml
+apiVersion: v1
+entries:
+  myapi:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-10-05T16:02:23.746980517Z"
+    dependencies:
+    - name: common
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 2.x.x
+    description: A Helm chart for Kubernetes
+    digest: e4b33c1eb939e05a69a11c20ef81efff5d639a361ee20e2a5372e079bdbb70fe
+    name: myapi
+    type: application
+    urls:
+    - https://github.com/mansunkuo/k8s-summit-2024/releases/download/myapi-0.1.0/myapi-0.1.0.tgz
+    version: 0.1.0
+generated: "2024-10-05T16:02:23.746987961Z"
+
+apiVersion: v1
+entries:
+  myapi:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2024-10-05T16:02:23.746980517Z"
+    dependencies:
+    - name: common
+      repository: oci://registry-1.docker.io/bitnamicharts
+      version: 2.x.x
+    description: A Helm chart for Kubernetes
+    digest: e4b33c1eb939e05a69a11c20ef81efff5d639a361ee20e2a5372e079bdbb70fe
+    name: myapi
+    type: application
+    urls:
+    - https://github.com/mansunkuo/k8s-summit-2024/releases/download/myapi-0.1.0/myapi-0.1.0.tgz
+    version: 0.1.0
+generated: "2024-10-05T16:02:23.746987961Z"
+```
+
+Your release will also be available under [Releases](https://github.com/mansunkuo/k8s-summit-2024/releases).
+
+### Install a Remote Chart
+We've added a READOME in the previous step. Most imkportant instruction are available in the README of the chart. Here are some execution result.
+
+Add the repo:
+```bash
+❯ helm repo add mansunkuo-k8s-summit-2024 https://mansunkuo.github.io/k8s-summit-2024
+"mansunkuo-k8s-summit-2024" has been added to your repositories
+```
+<br>
+
+List chart repositories:
+```bash
+❯ helm repo list
+NAME                            URL                                        
+mansunkuo-k8s-summit-2024       https://mansunkuo.github.io/k8s-summit-2024
+```
+<br>
+
+Search the chart:
+```bash
+❯ helm search repo mansunkuo-k8s-summit-2024
+NAME                            CHART VERSION   APP VERSION     DESCRIPTION                
+mansunkuo-k8s-summit-2024/myapi 0.1.0           1.16.0          A Helm chart for Kubernetes
+```
+<br>
+
+Install the chart:
+```bash
+❯ helm install mansunkuo-myapi mansunkuo-k8s-summit-2024/myapi
+NAME: mansunkuo-myapi
+LAST DEPLOYED: Sun Oct  6 02:25:46 2024
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=myapi,app.kubernetes.io/instance=mansunkuo-myapi" -o jsonpath="{.items[0].metadata.name}")
+  export CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
+```
+
+Follow the note and you can have your new API endpoint installed with Helm. Thank you for bringing a new Helm chart to the wonderful world.
 
 ## Referernces
 - [Chart Releaser Action to Automate GitHub Page Charts](https://helm.sh/docs/howto/chart_releaser_action/)
 - [Artifact Hub - Helm charts repositories](https://artifacthub.io/docs/topics/repositories/helm-charts/)
+- https://docs.github.com/en/pages/quickstart
 - https://helm.sh/docs/topics/chart_repository/
 - https://helm.sh/docs/topics/registries/
 - https://helm.sh/docs/chart_template_guide/debugging/
