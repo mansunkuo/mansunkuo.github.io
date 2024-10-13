@@ -39,7 +39,7 @@ cover:
 #     appendFilePath: true # to append file path to Edit link
 ---
 
-這篇文章是這次我在台灣 [Kubnetes Summit 2024](https://k8s.ithome.com.tw/2024/workshop-page/3261) 所帶領的工作坊，在這個實戰工作坊中，我們會介紹一個標準的 Helm Chart 的目錄架構以及裡面各個元件的基本設定，帶著您從無到有建立一個自己的 Helm Chart，使用 Helm Template 以及 Helm dependency 寫出容易使用以及可擴展的 Helm Chart，並實際使用 GitHub Page 以及 GitHub Action 讓您最新版本的 Helm Chart 可以透過 Helm Repo更容易分享給別人，最後會再讓大家實際去使用自己或是其他學員所包好的 Helm Chart 來部署在自己的 Kubernetes 叢集，順便熟悉一些重要的指令以及使用上的一些小技巧。文章很長，還請您善用目錄來幫您快速跳轉到你想去的地方。
+這篇文章是這次我在台灣 [Kubnetes Summit 2024](https://k8s.ithome.com.tw/2024/workshop-page/3261) 所帶領的工作坊，在這個實戰工作坊中，我們會介紹一個標準的 Helm Chart 的目錄架構以及裡面各個元件的基本設定，帶著您從無到有建立一個自己的 Helm Chart，使用 Helm Template 以及 Helm dependency 寫出容易使用以及可擴展的 Helm Chart，並實際使用 GitHub Page 以及 GitHub Action 讓您最新版本的 Helm Chart 可以透過 Helm Repo更容易分享給別人，最後會再讓大家實際去使用自己或是其他學員所包好的 Helm Chart 來部署在自己的 Kubernetes 叢集，順便熟悉一些重要的指令以及使用上的一些小技巧。文章很長，還請善用目錄來幫您快速跳轉到你想去的地方。
 
 ## 練習一: 創建您的第一個 Helm Chart
 
@@ -59,20 +59,31 @@ helm create charts/myapi
 
 Helm 會生成一個新 Chart 的默認結構，其中包含幾個文件和目錄：
 ```bash
-charts/myapi/
-  ├── charts/
-  ├── templates/
-  ├── values.yaml
-  ├── Chart.yaml
-  └── ...
+.
+└── charts
+    └── myapi
+        ├── charts
+        ├── templates
+        │   ├── NOTES.txt
+        │   ├── _helpers.tpl
+        │   ├── deployment.yaml
+        │   ├── hpa.yaml
+        │   ├── ingress.yaml
+        │   ├── service.yaml
+        │   ├── serviceaccount.yaml
+        │   └── tests
+        │       └── test-connection.yaml
+        ├── .helmignore
+        ├── Chart.yaml
+        └── values.yaml
 ```
 
-以下是每個檔案和資料夾的解釋：
+以下是每個檔案和資料夾的簡介：
 
-### Common files in a Helm chart
+### Helm chart 的常見檔案
 #### Chart.yaml
 
-This file contains metadata about the Helm chart, including the chart's name, version, and other descriptive information.
+這個文件包含有關 Helm Chart 的後設資料，包括圖表的名稱、版本和其他描述性資訊。
 
 {{< collapse openByDefault=true summary="charts/myapi/Chart.yaml" >}}
 ```yaml
@@ -105,7 +116,7 @@ appVersion: "1.16.0"
 
 #### values.yaml
 
-This file defines default values for your chart. It includes configurations such as replica counts, image information, service configurations, etc. These values can be overridden when installing the chart by passing your own values.yaml.
+這個文件定義了您的 Helm chart 的默認值。在安裝圖表時，您可以通過傳遞自己的 values.yaml 文件來覆蓋這些值。
 
 {{< collapse openByDefault=true summary="charts/myapi/values.yaml" >}}
 ```yaml
@@ -220,11 +231,11 @@ affinity: {}
 {{< /collapse >}}
 
 #### templates/
-This directory contains Kubernetes manifest templates that Helm uses to generate Kubernetes resources. Helm will render these templates by substituting the values from values.yaml.
+這個目錄包含 Helm 用來生成 Kubernetes 資源的 Kubernetes 清單模板。Helm 會通過替換 values.yaml 中的值來渲染這些模板。
+Helm 已經為您準備了一些典型的檔案，比如 deployment、hpa、ingress、service 和 serviceaccount。除了標準的 Kubernetes 物件外，該文件夾中還有一些特殊的檔案：
 
-Helm already prepare some typical files like deployment, hpa, ingress, serviceand serviceaccount for you. Beside standard Kubernetes objects, there are some special files in this folders:
 ##### _helpers.tpl
-A file for defining reusable template snippets and helper functions, commonly used for naming conventions.
+用於定義可重複使用模板片段和輔助函數的檔案，通常用於命名規範。
 
 {{< collapse openByDefault=true summary="charts/myapi/templates/_helpers.tpl" >}}
 ```go
@@ -294,7 +305,7 @@ Create the name of the service account to use
 {{< /collapse >}}
 
 ##### tests/test-connection.yaml
-A simple test resource for verifying the chart installation by checking service connectivity.
+一個簡單的測試資源，用於通過檢查服務連線性來驗證安裝結果。
 
 {{< collapse openByDefault=true summary="charts/myapi/templates/tests/test_connection.yaml" >}}
 ```yaml
@@ -318,7 +329,7 @@ spec:
 
 
 ##### NOTES.txt
-The NOTES.txt file in a Helm chart provides helpful information or instructions to the user after the chart is installed. When a Helm chart is successfully deployed, the contents of NOTES.txt are displayed in the output.
+Helm chart 中的 NOTES.txt 文件在圖表安裝後為用戶提供有用的信息或說明。當 Helm chart 成功部署時，NOTES.txt 的內容會顯示在輸出中。
 
 {{< collapse openByDefault=true summary="charts/myapi/templates/NOTES.txt" >}}
 ```go
@@ -348,13 +359,14 @@ The NOTES.txt file in a Helm chart provides helpful information or instructions 
 {{< /collapse >}}
 
 ##### .helmignore
-This file defines patterns for files and directories that should be excluded when packaging the chart (similar to .gitignore).
+這個檔案定義了在打包 chart 時應排除的檔案和目錄的模式（類似於 .gitignore）。
 
 #### charts/
-This directory is used to store any dependent charts. If your chart relies on other charts (e.g., a database), those charts can be placed here.
+這個目錄用來儲存任何依賴的 charts。如果您的 chart 依賴於其他 charts（例如，資料庫），這些 charts 可以放在這裡。
 
-### Install a local Helm chart
-To install the Helm chart without changing directories, you can specify the full path to the chart when running the helm install command. For example, installing a helm:
+
+### 安裝本地的 local Helm chart
+要在不更改目錄的情況下安裝 Helm chart，您可以在執行 helm install 命令時指定 chart 的完整路徑。例如，安裝一個名為 `myapi-release` 的 helm release：
 ```bash
 helm install myapi-release ./charts/myapi
 ```
@@ -376,10 +388,10 @@ NOTES:
 ```
 {{< /collapse >}}
 
-Here are some commands you can use to check the status and details of your Helm releases and the resources they deploy:
+以下是一些您可以使用的命令，用於檢查您的 Helm 釋出的狀態和詳細資訊，以及它們所部署的資源：
 
-#### List installed Helm releases
-This command lists all of the releases for a specified namespace (uses current namespace context if namespace not specified). For example:
+#### 列出已安裝的 Helm releases
+這個命令會列出指定命名空間的所有 releases（如果未指定命名空間，則使用當前的命名空間）。例如：
 ```bash
 helm list
 ```
@@ -392,8 +404,8 @@ myapi-release   default         1               2024-09-18 01:48:22.904366277 +0
 ```
 {{< /collapse >}}
 
-#### Get detailed information about a specific Helm release
-This command shows the status of a named release. For example:
+#### 獲取有關特定 Helm release 的詳細資訊
+此命令顯示指定名稱釋出的狀態。例如：
 ```bash
 helm status myapi-release
 ```
@@ -415,13 +427,13 @@ NOTES:
 ```
 {{< /collapse >}}
 
-you can copy and paste the notes provides by the Helm chart and visit [http://127.0.0.1:8080](http://127.0.0.1:8080). It is a typical welcome page of nginx. 
+您可以複製貼上 Helm chart 提供的註解，然後訪問 [http://127.0.0.1:8080](http://127.0.0.1:8080)。這是一個大家都很熟悉的 nginx 歡迎頁面。
 
-#### Get all resources created by the Helm chart
+#### 獲取由 Helm chart 創建的所有資源
 ```bash
 kubectl get all -l app.kubernetes.io/instance=myapi-release
 ```
-This command lists all Kubernetes resources that have the label `app.kubernetes.io/instance=myapi-release`. This label typically indicates that these resources are part of a specific Helm release or application instance.
+此命令列出所有具有 `app.kubernetes.io/instance=myapi-release` 這個標籤的 Kubernetes 資源。這個標籤通常表示這些資源是特定 Helm release 或應用實例的一部分。
 
 {{< collapse openByDefault=false summary="kubectl get all -l app.kubernetes.io/instance=myapi-release" >}}
 ```bash
@@ -440,11 +452,12 @@ replicaset.apps/myapi-release-54b5c4d9c8   1         1         1       2m19s
 ```
 {{< /collapse >}}
 
-## Exercise 2: Modify it as an API
-In this lab, we will modify this Helm chart as an API instance of [FastAPI](https://fastapi.tiangolo.com/). 
+## 練習二：將其修改為 API
+在這個練習中，我們將修改這個 Helm chart，以創建 [FastAPI](https://fastapi.tiangolo.com/) 的 API 實例。
 
-### Add an API endpoint
-Let's add an API endpoint in a ConfigMap with [FastAPI]. Embedding your FastAPI application code directly into a ConfigMap is unconventional and not typically recommended for production environments, as ConfigMaps are generally used for configuration data rather than application code. We do it here to save the complexity of building our own image. Please don't do that in your formal environment.
+
+### 添加 API 端點
+讓我們在 ConfigMap 中添加 API 端點。我們一般不會將 FastAPI 的程式碼直接嵌入到 ConfigMap ， ConfigMap 通常用於配置設定，而不是程式碼。我們這樣做是為了在這個課程中省略構建我們自己的容器的過程。請不要直接在正式環境中這樣做。
 
 {{< collapse openByDefault=true summary="git diff charts/myapi/values.yaml" >}}
 ```yaml
@@ -470,12 +483,12 @@ data:
 ```
 {{< /collapse >}}
 
-This code is a simple FastAPI web application with two endpoints: 
-- **Root endpoint** (`/`): When someone accesses this URL with a GET request, the app returns a static JSON response, like `{"Hello": "World"}`. This is a simple welcome message.
-- **Dynamic "hello" endpoint** (`/hello/{user}`): The URL takes a name or value (like a username) as part of the path. For example, accessing `/hello/Alice` will pass "Alice" to the function, and the app will respond with a personalized message: `{"Hello": "Alice"}`.
+這段程式碼是一個簡單的 FastAPI 網頁應用程式，具有兩個端點：
+- **根端點** (`/`): 當有人以 GET 請求訪問此 URL 時，應用程式會返回靜態 JSON 響應，如 `{"Hello": "World"}`。這是一個簡單的歡迎消息。
+- **動態 "hello" 端點** (`/hello/{user}`): 該 URL 將名稱或值（如用戶名）作為路徑的一部分。例如，訪問 `/hello/Mansun` 將把 "Mansun" 傳遞給函數，應用程式將回覆：`{"Hello": "Mansun"}`。
 
-### Replace image and expose command and args 
-Let's modify the values.yaml of out Helm chart.
+### 替換容器映像檔並設定命令和參數
+讓我們修改我們的 Helm chart 的 values.yaml。
 
 {{< collapse openByDefault=true summary="git diff charts/myapi/values.yaml" >}}
 ```diff
@@ -511,26 +524,21 @@ index fa277c8..288c7d3 100644
 ```
 {{< /collapse >}}
 
-In this example, `tiangolo/uvicorn-gunicorn-fastapi` is a commonly pre-built image for running FastAPI applications. You can fild all available images in [tiangolo/uvicorn-gunicorn-fastapi](https://hub.docker.com/r/tiangolo/uvicorn-gunicorn-fastapi). We choose the latest slim version.
+這個差異比較了對 Helm chart 的 values.yaml 檔案所做的更改：
 
-This diff compares changes made to the `values.yaml` file of a Helm chart, specifically for the `myapi` application. Here’s what was changed:
+1. 映像檔倉庫  
+映像檔已更新為 `tiangolo/uvicorn-gunicorn-fastapi`，這是一個常見的預建映像檔，用於運行 FastAPI 應用程式。您可以在 tiangolo/[tiangolo/uvicorn-gunicorn-fastapi](https://hub.docker.com/r/tiangolo/uvicorn-gunicorn-fastapi) 中找到所有可用的映像檔。我們選擇最新的精簡版本。這個變動讓我們從使用 Nginx 服務靜態檔案，轉變為運行 FastAPI 應用程式。
 
-1. Image Repository  
-The image was updated to `tiangolo/uvicorn-gunicorn-fastapi`, which is a commonly pre-built image for running FastAPI applications. You can fild all available images in [tiangolo/uvicorn-gunicorn-fastapi](https://hub.docker.com/r/tiangolo/uvicorn-gunicorn-fastapi). We choose the latest slim version. This reflects a switch from serving static files (with Nginx) to running a FastAPI application.
+2. 映像標籤  
+映像標籤已明確設置為 `python3.11-slim`，這確保應用程式將在這個特定的輕量級 Python 3.11 映像上運行。
 
-2. Image Tag  
-The tag was explicitly set to `python3.11-slim`, which ensures the application will run on this specific lightweight Python 3.11 image.
+3. 命令和參數  
+添加了 `command` 和 `args` 欄位。這指定當容器啟動時，將運行 `uvicorn`，這是 FastAPI 的 ASGI 伺服器。它被配置為在主機 `0.0.0.0` 和通訊埠 `8080` 上運行 FastAPI 應用程式 (`main:app`)。
 
-3. Command and Arguments  
-The `command` and `args` fields were added. This specifies that when the container starts, it will run `uvicorn`, which is the ASGI server for FastAPI. It is configured to run the FastAPI application (`main:app`) on host `0.0.0.0` and port `8080`.
+4. 容器通訊埠  
+新增 `containerPort` 欄位，將容器內的通訊埠設置為 `8080`。這確保 FastAPI 應用程式可以在該通訊埠上訪問。
 
-4. Container Port  
-A `containerPort` field was added, setting the port inside the container to `8080`. This ensures the FastAPI application will be accessible on that port.
-
-The changes reflect a transition from using an Nginx container to using a FastAPI container with Uvicorn. The container is now configured to run a FastAPI app at port 8080, with the image explicitly set to `python3.11-slim`.
-
-
-The modified file will be:
+修改後的檔案：
 {{< collapse openByDefault=false summary="charts/myapi/values.yaml" >}}
 ```yaml
 # Default values for myapi.
@@ -650,7 +658,7 @@ affinity: {}
 {{< /collapse >}}
 
 
-### Mount volume and refine depoloyment
+### 掛載 volume 及調整部署
 {{< collapse openByDefault=true summary="git diff charts/myapi/templates/deployment.yaml" >}}
 ```diff
 diff --git a/charts/myapi/templates/deployment.yaml b/charts/myapi/templates/deployment.yaml
@@ -696,9 +704,22 @@ index 8012d09..ae95687 100644
 ```
 {{< /collapse >}}
 
-### Upgrade the Helm release 
+以下是主要變更的解釋：
+1. 新增 Command 和 Args  
+在容器規範中新增 `command` 和 `args` 欄位，允許您通過 Helm values (`.Values.command` 和 `.Values.args`) 覆蓋預設的容器進入點和參數。
+2. 通訊埠參考更新  
+更改了通訊埠值的來源。現在使用 `.Values.containerPort`，而不是 `.Values.service.port`。
+3. 掛載應用程式碼 Volume  
+將名為 `app-code` 的卷掛載到容器內的 `/app` 目錄。
+4. 應用程式碼 Volume 定義  
+定義了一個名為 `app-code` 的 Volume，引用了包含 `main.py` 的 ConfigMap。此 ConfigMap 通過 `myapi.fullname` 輔助模板引入，並將其中的 `main.py` 鍵掛載為容器中的 `main.py`。
+5. 重新組織 volumes 和 volumeMounts 區塊  
+引入了新的掛載 (`app-code`)，並且現有的 volumeMounts and volumes 仍然可以通過 `with` 指令增加 `.Values.volumeMounts` 和 `.Values.volumes` 中的任何其他值。
 
-Let's upgrate the Helm release as our new API:
+
+### 升級 Helm release
+
+升級 Helm release，讓我們的新 API 可供使用:
 ```bash
 helm upgrade --install myapi-release ./charts/myapi
 ```
@@ -721,7 +742,7 @@ NOTES:
 ```
 {{< /collapse >}}
 
-Copy and pase the command in one terminal to forward the port of API pod:
+在一個終端機中複製並貼上指令，將 API Pod 的通訊埠暴露出來：
 
 {{< collapse openByDefault=true summary="port forwarding" >}}
 ```bash
@@ -735,7 +756,7 @@ Forwarding from [::1]:8080 -> 8080
 ```
 {{< /collapse >}}
 
-Use another terminal to check your API:
+使用另一個終端機檢查你的 API：
 {{< collapse openByDefault=true summary="check API" >}}
 ```bash
 ❯ curl localhost:8080
@@ -745,7 +766,7 @@ Use another terminal to check your API:
 ```
 {{< /collapse >}}
 
-Let's check our k8s secrets:
+讓我們檢查一下我們的 k8s secrets：
 ```bash
 ❯ kubectl get secrets
 NAME                                  TYPE                 DATA   AGE
@@ -753,11 +774,11 @@ sh.helm.release.v1.myapi-release.v1   helm.sh/release.v1   1      22m
 sh.helm.release.v1.myapi-release.v2   helm.sh/release.v1   1      18m
 ```
 
-`sh.helm.release.v1.myapi-release.v1` and `sh.helm.release.v1.myapi-release.v2` are secrets generated by Helm. These secrets store information about Helm releases. The suffixes .v1 and .v2 refer to different revisions of the Helm release. Each time a release is updated, a new secret is created.
+`sh.helm.release.v1.myapi-release.v1` 和 `sh.helm.release.v1.myapi-release.v2` 是由 Helm 生成的 secrets。這些 secrets 用來儲存 Helm release 的資訊。後綴 .v1 和 .v2 分別代表不同版本的 Helm release。每次更新 release 時，都會創建一個新的 secret。
 
-The type of secret, `helm.sh/release.v1` is specific to Helm. Helm uses this type of secret to track the state of releases.
+secret 的類型 helm.sh/release.v1 是 Helm 特有的類型。Helm 使用這種 secret 來追蹤 release 的狀態。
 
-For example, it is possible to extract the manifest from the secret:
+例如，可以從 secret 中提取出 manifest：
 {{< collapse openByDefault=false summary="Decode Helm release" >}}
 ```yaml
 ❯ kubectl get secret sh.helm.release.v1.myapi-release.v2 -o jsonpath="{.data.release}" | base64 --decode | base64 --decode | gunzip | jq -r .manifest
@@ -893,9 +914,9 @@ spec:
 ```
 {{< /collapse >}}
 
-It is a templated k8s objects of the release. That is why Helm can rollback our alpplication to any release. 
+這是一個針對 release 的模板化 k8s 物件。這也是為什麼 Helm 可以將我們的應用程式回滾到任何 release。
 
-Let's try to rollback to the original nginx version:
+讓我們嘗試回滾到原本的 nginx 版本：
 ```bash
 ❯ helm rollback myapi-release 1
 Rollback was a success! Happy Helming!
@@ -904,21 +925,24 @@ NAME            NAMESPACE       REVISION        UPDATED                         
 myapi-release   default         3               2024-09-18 02:34:03.72739722 +0800 CST deployed        myapi-0.1.0     1.16.0
 ```
 
-Rollback to the FastAPI version:
+回滾到 FastAPI 版本：
 ```bash
+❯ helm rollback myapi-release 2
+Rollback was a success! Happy Helming!
 ❯ helm ls
 NAME            NAMESPACE       REVISION        UPDATED                                        STATUS          CHART           APP VERSION
 myapi-release   default         4               2024-09-18 02:38:42.936136839 +0800 CST        deployed        myapi-0.1.0     1.16.0
 ```
 
-It populate a new revision from the revision you assigned.
+它會從您指定的 revision 去長出一個新的 revision。
 
-## Exercise 3: Why my secret is not updated
-Let's add a random passcode in out API.
+## 練習三：為什麼我的 secret 沒有更新
+讓我們在 API 中添加一個隨機的通關密碼。
 
-### Add a random secret and encode it
-Helm provides a lot of handy [template functions and pipelines](https://helm.sh/docs/chart_template_guide/functions_and_pipelines/). You can find more useful template functions in [Template Function List](https://helm.sh/docs/chart_template_guide/function_list/). For example, here is a k8s secret object with a random 10-digit passcode. We also pipe it into another function that encode a string into base64 encoding. 
+### 添加一個隨機密鑰並對其進行編碼
+Helm 提供了許多方便的 [模板函數和管線](https://helm.sh/docs/chart_template_guide/functions_and_pipelines/)。您可以在 [模板函數列表](https://helm.sh/docs/chart_template_guide/function_list/) 中找到更多有用的模板函數。例如，這裡有一個包含隨機 10 位數密碼的 k8s secret。我們將它經由管線傳遞到另一個函數，將字符串編碼為 base64 編碼。
 
+{{< collapse openByDefault=true summary="charts/myapi/templates/secret.yaml" >}}
 ```yaml
 apiVersion: v1
 kind: Secret
@@ -930,9 +954,10 @@ type: Opaque
 data:
   passcode: {{ randAlphaNum  10 | b64enc }}  # Generate a random 10-digit passcode and encode it in base64
 ```
+{{< /collapse >}}
 
-### Mount the secret on the deployment
-Let's mount our secret as an environment variable on the deployment. No special trick here, just remember to reuse template function, fullname which generated by `helm create`.
+### 在部署中掛載密鑰
+讓我們將密鑰掛載為部署中的環境變數。這裡沒有特別的技巧，只需要記得重複使用先前透過 `helm create` 生成的模板函數 `myapi.fullname`。
 
 ```diff
 diff --git a/charts/myapi/templates/deployment.yaml b/charts/myapi/templates/deployment.yaml
@@ -954,7 +979,7 @@ index ae95687..172c1b5 100644
                containerPort: {{ .Values.containerPort }}
 ```
 
-### Consume the environment variable
+### 使用環境變數
 ```diff
 diff --git a/charts/myapi/templates/configmap.yaml b/charts/myapi/templates/configmap.yaml
 index 9d96063..0449698 100644
@@ -978,14 +1003,14 @@ index 9d96063..0449698 100644
      def hello(user: str):
 ```
 
-### What's wrong
-Let's upgrade our Helm release and check what is inside the secret: 
+### 問題在哪
+讓我們升級我們的 Helm release 並檢查該 secret 的內容：
 ```bash
 helm upgrade --install myapi-release ./charts/myapi
 kubectl get secret myapi-release -o jsonpath="{.data.passcode}" | base64 --decode
 ```
 
-You can execute above code snippet multiple times. The secret will changes in every release, but your API will still with the oldest secret.
+您可以多次執行上述程式碼片段。每次執行時， secret 將會改變，但您的 API 仍將使用最舊的 secret 。
 
 {{< collapse openByDefault=false summary="Helm upgrade and check secret" >}}
 ```bash
@@ -1022,10 +1047,7 @@ RiNr1OQLMd%
 ```
 {{< /collapse >}}
 
-
-
-Changes to ConfigMap or Secret objects that are referenced in a pod spec do not trigger a pod rollout on their own, even if the underlying data changes. This is because Kubernetes doesn't watch for changes to those resources by default. Let's add a little trick to make Helm [automatically roll deployments](https://helm.sh/docs/howto/charts_tips_and_tricks/#automatically-roll-deployments):
-
+對於在 Pod 規範中引用的 ConfigMap 或 Secret 物件，若其內容發生變更，儘管底層資料有所改變，並不會自動觸發 Pod 的滾動更新。這是因為 Kubernetes 預設並不會監視這些資源的變化。我們來使用一個小技巧，讓 Helm 可以 [自動滾動更新部署](https://helm.sh/docs/howto/charts_tips_and_tricks/#automatically-roll-deployments)：
 
 ```diff
 diff --git a/charts/myapi/templates/deployment.yaml b/charts/myapi/templates/deployment.yaml
@@ -1048,9 +1070,9 @@ index 172c1b5..1e324c8 100644
 ```
 
 
-Helm will roll out the pod when the content of the deployment spec or the checksum annotations for ConfigMap or Secret change. By including the checksums of the ConfigMap and Secret, the deployment will automatically be rolled out whenever these files change. This ensures that the changes in configuration or secrets trigger a new pod deployment.
+當部署規範的內容或 ConfigMap 或 Secret 的 checksum 標註發生變更時，Helm 將會滾動更新 Pod。透過包含 ConfigMap 和 Secret 的 checksum，當這些檔案變更時，部署將自動進行滾動更新。這確保了設定檔或 secrets 的變更會觸發新的 Pod 部署。
 
-The whole deployment config will look like this:
+整個部署配置將如下所示：
 {{< collapse openByDefault=false summary="charts/myapi/templates/deployment.yaml" >}}
 ```yaml
 apiVersion: apps/v1
@@ -1143,14 +1165,14 @@ spec:
 ```
 {{< /collapse >}} 
 
-## Exercise 4: Add a Helm dependency
-[Helm dependency](https://helm.sh/docs/helm/helm_dependency/) manage the dependencies of a chart. Helm charts store their dependencies in 'charts/'. For chart developers, it is often easier to manage dependencies in 'Chart.yaml' which declares all dependencies.
+## 練習四：新增 Helm dependency
+[Helm dependency](https://helm.sh/docs/helm/helm_dependency/) 用來管理一個 Helm chart 所依賴的其他 Helm charts 。 Helm charts 將其儲存在 `charts/` 資料夾中。對於 chart 開發者來說，直接管理 `Chart.yaml` 中的依賴通常更為簡單。
 
-The dependency commands operate on that file, making it easy to synchronize between the desired dependencies and the actual dependencies stored in the 'charts/' directory.
+`helm dependency` 會作用於該檔案，使得在所需的依賴和實際存放在 `charts/` 資料夾中的其他 Helm charts 之間的同步變得容易。
 
-The [Bitnami Library for Kubernetes](https://github.com/bitnami/charts) is a Helm repository with various pre-packaged Kubernetes resources that make it easier to deploy common open-source applications and infrastructure components in Kubernetes clusters. There is a special chart, [Bitnami Common Library Chart](https://github.com/bitnami/charts/tree/main/bitnami/common), which grouping common logic between Bitnami charts. Let's add it into our Helm chart.
+[Bitnami Library for Kubernetes](https://github.com/bitnami/charts) 是一個 Helm repository ，提供各種預先打包的 Kubernetes 資源，使在 Kubernetes 叢集上部署常見的開源應用程式和基礎設施組件變得更容易。這裡有一個特殊的 chart， Bitnami Common Library Chart](https://github.com/bitnami/charts/tree/main/bitnami/common) ，它將 Bitnami charts 之間的共通邏輯進行分組。讓我們將它添加到我們的 Helm chart 中。
 
-### Add a dependency
+### 新增一個 dependency
 ```diff
 diff --git a/charts/myapi/Chart.yaml b/charts/myapi/Chart.yaml
 index e1991d4..4b34b58 100644
@@ -1168,10 +1190,11 @@ index e1991d4..4b34b58 100644
 \ No newline at end of file
 ```
 
-`x` means latest for major, minor, or patch of a semantic versioning.
+`x` 代表 [Semantic Versioning](https://semver.org/) 中的主要、次要或修補版本的最新版本。
 
-### Build dependency
-Let's refresh the Helm dependency based on Chart.yaml
+### 建立 dependency
+讓我們根據 `Chart.yaml` 刷新 Helm dependency：
+
 ```bash
 ❯ helm dependency update charts/myapi
 Saving 1 charts
@@ -1181,14 +1204,15 @@ Digest: sha256:7e1d75e30a368544c724e480b8f375f702ecdd6933634a852b760660c6cbd588
 Deleting outdated charts
 ```
 
-This command will create a `Chart.lock` file. You can use `helm dependency build` to reconstruct a chart's dependencies to the state specified in the lock file. Here is a summary of the difference between `helm dependency build` and `helm dependency update`:
+此命令將產生一個 `Chart.lock` 檔案。您可以使用 `helm dependency build` 來重建 Helm chart 所依賴的其他 charts，以符合鎖定檔案中指定的狀態。以下是 `helm dependency build` 和 `helm dependency update` 之間差異的總結：
 
-| **Command**              | **Works With**       | **Downloads Dependencies**        | **Updates Chart.lock**         | **Use Case**                                        |
+| **命令**              | **適用於**       | **下載相依**        | **更新 Chart.lock**         | **使用情境**                                        |
 |--------------------------|----------------------|-----------------------------------|-------------------------------|----------------------------------------------------|
-| `helm dependency build`   | `Chart.lock`         | Based on the locked versions      | No                            | Install exact versions of dependencies as specified in the `Chart.lock` file for reproducibility. |
-| `helm dependency update`  | `Chart.yaml`         | Based on the latest matching versions in `Chart.yaml` | Yes                           | Update dependencies to the latest matching versions as specified in `Chart.yaml`, and regenerate the `Chart.lock` file. |
+| `helm dependency build`   | `Chart.lock`         | 根據鎖定的版本      | 否                            | 	安裝 `Chart.lock` 檔案中指定的依賴項的確切版本，以確保可重現性。 |
+| `helm dependency update`  | `Chart.yaml`         | 根據 `Chart.yaml` 中可得到的最新的版本 | 是                           | 根據 `Chart.yaml` 中指定的最新匹配版本更新並重新生成 `Chart.lock` 檔案。 |
 
-It also generate a `charts/` forder which contains all dependencies for the chart. Starting from 2.2.0, repository can be defined as the path to the directory of the dependency charts stored locally. The path should start with a prefix of "file://". For example:
+上述指令還會生成一個 `charts/` 資料夾，其中包含該 chart 的所有依賴項。從 Helm 2.2.0 開始，可以將 repository 定義為儲存在本地的 charts 的目錄路徑。該路徑應以 "file://" 的前綴開始。例如：
+
 
 ```yaml
 # Chart.yaml
@@ -1198,14 +1222,14 @@ dependencies:
   repository: "file://../dependency_chart/nginx"
 ```
 
-If the dependency chart is retrieved locally, it is not required to have the repository added to helm by "helm add repo". Version matching is also supported for this case.
+如果依賴的 chart 是從本地的檔案或使用 OCI-based registries ，則不需要通過 `helm add repo` 將 repository 添加到 helm 之中。
 
-In our case, we are using an external dependency. We don't need to add it into our git repository. Let's add an .gitignore for it:
+在我們的例子中，我們使用的是外部依賴。我們不需要將 `*.tgz` 檔案添加到我們的 git 存儲庫中。讓我們為此添加一個 .gitignore：
 ```bash
 curl -o .gitignore https://raw.githubusercontent.com/bitnami/charts/refs/heads/main/.gitignore
 ``` 
 
-{{< collapse openByDefault=false summary=".gitignore" >}}
+{{< collapse openByDefault=true summary=".gitignore" >}}
 ```git
 *.tgz
 /.idea/*
@@ -1214,21 +1238,22 @@ curl -o .gitignore https://raw.githubusercontent.com/bitnami/charts/refs/heads/m
 ```
 {{< /collapse >}} 
 
-### OCI-based registries and traditional chart repository
-Beginning in Helm 3, you can use container registries with [OCI (Open Container Initiative)](https://opencontainers.org/) support to store and share chart packages. Beginning in Helm v3.8.0, OCI support is enabled by default. You don't need to use helm repo add for an OCI (Open Container Initiative) registry (oci://) because Helm interacts with OCI registries in a different way than with traditional Helm chart repositories.
+### OCI-based registries 和傳統的 chart repository
+自 Helm 3 起，您可以使用支援 [OCI (Open Container Initiative)](https://opencontainers.org/) 的 container registries 來儲存和分享 chart 套件。從 Helm v3.8.0 開始，OCI 支援預設已啟用。您不需要對 OCI (Open Container Initiative) 註冊表（`oci://`）使用 `helm repo add`，因為 Helm 與 OCI-based registries 的互動方式與傳統的 Helm chart repository 不同。
 
-Key Differences Between OCI Registries and Helm Chart Repositories:
-1. Traditional Helm Repositories:
-- Traditional Helm repositories (e.g., https://charts.example.com) use the helm repo add command to register the repository URL with Helm. This allows Helm to search, fetch, and install charts from the repository using a simple chart name and version.
-- Repositories store a index.yaml file that acts as a catalog of all the charts, which Helm uses to fetch charts by name.
-2. OCI Registries:
-- OCI registries are more similar to Docker image registries (e.g., Docker Hub), where charts are stored as OCI artifacts.
-- You don’t need an index file (like index.yaml) or a repository registration step (helm repo add). Instead, you can directly interact with the OCI registry using commands like helm pull, helm push, and helm install with the oci:// scheme.
+OCI-based registries 和 Helm Chart repository 之間的主要區別：
 
-With OCI registries, Helm interacts directly with charts using the oci:// scheme, bypassing the need for helm repo add and index.yaml files. This is more similar to working with Docker images than traditional Helm chart repositorie
+1. 傳統的 Helm Repositories：
+    - 傳統的 Helm repositories 使用 `helm repo add` 命令將 repository URL 註冊到 Helm 中。這允許 Helm 使用簡單的 chart 名稱和版本來搜索、獲取和安裝來自該 repository 的 charts。
+    - Repositories 存儲一個 `index.yaml` 檔案，該檔案作為所有 charts 的目錄，Helm 使用它來按名稱獲取 charts。
+2. OCI-based registries：
+    - OCI-based registries 更類似於 Docker registries（例如，Docker Hub），其中 charts 作為 OCI artifacts。
+    - 您不需要索引檔（例如 `index.yaml`）或註冊的步驟（`helm repo add`）。相反，您可以直接使用 `helm pull`、`helm push` 和使用 `oci://` 協議的 `helm install` 命令與 OCI-based registries 進行互動。
 
-### Apply the dependency
-Let' add a place holder of in values.yaml
+使用 OCI-based registries 時，Helm 直接使用 `oci://` 協議與 charts 進行互動，繞過了對 `helm repo add` 和 `index.yaml` 檔案的需求。這更像是與 Docker 映像打交道，而不是傳統的 Helm chart repositories。
+
+### 應用 dependency
+讓我們在 `values.yaml` 中添加一個空的 `secrets.passcode`:
 
 {{< collapse openByDefault=true summary="git diff charts/myapi/values.yaml" >}}
 ```diff
@@ -1247,7 +1272,7 @@ index 288c7d3..a1e50b7 100644
 ```
 {{< /collapse >}}
 
-And modify our passcode:
+然後修改我們的 passcode:
 {{< collapse openByDefault=true summary="git diff charts/myapi/templates/secret.yaml" >}}
 ```diff
 diff --git a/charts/myapi/templates/secret.yaml b/charts/myapi/templates/secret.yaml
@@ -1272,17 +1297,15 @@ index 6cd83d6..a81ce6b 100644
 ```
 {{< /collapse >}}
 
-Let's break down the changes:
-1. Introduction of a Variable for Fullname:
+讓我們來分析一下這些變更：
 
-The `fullname` is now assigned to the `$fullname` variable with the line `{{- $fullname := include "myapi.fullname" . }}`. This allows for reusing `$fullname` throughout the template instead of repeating `{{ include "myapi.fullname" . }}` every time you need the full name. It improves readability when the full name needs to be used in multiple places.
+1. 為 `fullname` 引入變數：
+`fullname` 現在被賦值給 `$fullname` 變數，透過 `{{- $fullname := include "myapi.fullname" . }}` 這行。這樣可以在模板中重複使用 `$fullname`，而不必每次都重複寫 `{{ include "myapi.fullname" . }}`，這提高了可讀性，當需要在多個地方使用全名時會更方便。
 
-2. Replacement of Simple Random Password with Managed Secret:
+2. 用管理密碼取代簡單隨機密碼：
+簡單的隨機密碼生成 (`randAlphaNum 10`) 被 Bitnami 的 `common.secrets.passwords.manage` 函數所取代。此函數用於生成或檢索密碼，如果密碼已經存在（例如，在升級期間），它會檢索現有的密碼，避免不必要的密碼變更。這增強了密碼管理的安全性和靈活性。該密碼可以在升級中重複使用，確保一致性，避免每次都生成新密碼。更多使用說明可參考其 [GitHub](https://github.com/bitnami/charts/blob/07062ee01382e24b8204b27083ff3e8102110c2f/bitnami/common/templates/_secrets.tpl#L66-L142)。
 
-The simple random password generation (`randAlphaNum 10`) is replaced with Bitnami's `common.secrets.passwords.manage` function from the Bitnami `common` library. The function is used to generate or retrieve a password. If the secret already exists (e.g., during an upgrade), it will retrieve the existing password, preventing unnecessary password changes. This enhances the security and flexibility of secret management. The secret can be reused across upgrades, ensuring consistency without generating new passwords every time.
-
-Let's uninstall and install it again. We will get a random passcode:
-
+讓我們卸載並重新安裝它。我們將獲得一個隨機密碼：
 
 {{< collapse openByDefault=true summary="helm upgrade --install myapi-release ./charts/myapi" >}}
 ```bash
@@ -1307,7 +1330,7 @@ x8ZdR8zBsQ%
 {{< /collapse >}}
 
 
-We can also assigned a desired value for it. When we install it again, the passcode is still the same.
+我們也可以為它指定一個期望的值。當我們再次安裝時，密碼將保持不變。
 {{< collapse openByDefault=true summary="helm upgrade --install myapi-release ./charts/myapi --set secrets.passcode=konosuba" >}}
 ```bash
 ❯ helm uninstall myapi-release
@@ -1345,19 +1368,19 @@ konosuba%
 ```
 {{< /collapse >}}
 
-## Exercise 5: Chart Releaser Action to Automate GitHub Page Charts
-###  Setup Your GitHub Repository
-In this lab, we will publish out chart to GItHib pags with GitHub Action. First of all, you will need a new repository called `k8s-summit-2024`. Please follow step 1, 2, 3 and 5 in [Quickstart for GitHub Pages](https://docs.github.com/en/pages/quickstart) to creak a blank repository called `k8s-summit-2024`:
-- In the upper-right corner of any page, select `+`, then click **New repository**.
-- Enter `k8s-summit-2024` as the repository name.
-- Choose `Public` as the  repository visibility.
-- Add an optional description.
-- Click **Create repository**. 
+## 練習五：使用 Chart Releaser Action 自動化 GitHub Pages 上的 Charts
+###  設置您的 GitHub Repository
+在這個練習中，我們將使用 GitHub Action 將 chart 發佈到 GitHub Pages。首先，您需要一個名為 `k8s-summit-2024` 的新存儲庫。請遵循 [GitHub Pages 快速入門](https://docs.github.com/en/pages/quickstart) 中的第 1、2、3 和 5 步來創建一個名為 k8s-summit-2024 的空 repository：
+- 在任何頁面的右上角，選擇 +，然後點擊 **New repository**。
+- 輸入 `k8s-summit-2024` 作為 repository 的名稱。
+- 選擇 `Public` 作為 repository visibility。
+- 添加一些非強制的描述。
+- 點擊 **Create repository**。
 
-![create-repo](./create-repo.png)
+![create-repo](../../../tech/helm/create-repo.png)
 
 
-Follow the instruction of "push an existing repository from the command line". The `$USER` will be your GitHub account in the instruction:
+按照 "push an existing repository from the command line" 的指示進行操作. 指令中的 `$USER` 是您的 GitHub 帳戶：
 
 ```bash
 git remote add origin git@github.com:$USER/k8s-summit-2024.git
@@ -1365,7 +1388,7 @@ git branch -M main
 git push -u origin main
 ```
 
-You also need a branch called `gh-pages` to make it work. We will use this branch to host our charts. Let's create and checkout a new branch and push it to our repository. Remember to switch back to your main branch.
+您還需要一個名為 `gh-pages` 的分支來使其正常運作。我們將使用這個分支來託管我們的 charts。讓我們創建並切換到新分支，然後將其推送到我們的存儲庫。記得切換回您的主分支。
 
 ```bash
 git checkout -b gh-pages
@@ -1373,17 +1396,19 @@ git push origin gh-pages
 git checkout main
 ```
 
-Follow step 6 to step 9 in [Quickstart for GitHub Pages](https://docs.github.com/en/pages/quickstart) to config your gh-pages:
-- Under your repository name, click  Settings. If you cannot see the "Settings" tab, select the  dropdown menu, then click Settings.
-- In the "Code and automation" section of the sidebar, click  Pages.
-- Under "Build and deployment", under "Source", select Deploy from a branch.
-- Under "Build and deployment", under "Branch", use the branch dropdown menu and select `gh-pages`.
-![gh-pages](./gh-pages.png)
+按照 [GitHub Pages 快速入門](https://docs.github.com/en/pages/quickstart) 中的第 6 步到第 9 步配置您的 gh-pages：
+
+- 在您的 repository 名稱下，點擊 `Settings`。如果您看不到 "Settings" 標籤，請選擇下拉清單，然後點擊 `Settings`。
+- 在側邊欄的 "Code and automation" 部分，點擊 `Pages`。
+- 在 "Build and deployment" 下，選擇 `Deploy from a branch`。
+- 在 "Build and deployment" 下，使用分支下拉菜單選擇 `gh-pages`。
+
+![gh-pages](../../../tech/helm/gh-pages.png)
 
 
-### Final Adjustment for Your Helm Chart
+### 對您的 Helm chart 進行最後的調整
 
-Copy and paste following lines to add `charts/myapi/README.md` for your Helm chart. Remember to replace `ORGNAME` as your GitHub account.
+將以下指令複製並貼上至終端機，為您的 Helm chart 新增 `charts/myapi/README.md`。記得將 `ORGNAME` 替換為您的 GitHub 帳號。
 ```markdown
 # Define variables
 ALIAS=$USER-k8s-summit-2024
@@ -1417,7 +1442,7 @@ To uninstall the chart:
 EOT
 ```
 
-Add a README for your whole repository.
+為整個 repository 新增一個 README。
 ```bash
 cat << 'EOT' > README.md
 # k8s-summit-2024
@@ -1425,7 +1450,7 @@ A sample helm chart repo created in k8s summit 2024.
 EOT
 ```
 
-Add your name into the API to make it easier to be recognize:
+將你的名字加入 API 以方便辨識：
 {{< collapse openByDefault=true summary="git diff charts/myapi/templates/configmap.yaml" >}}
 ```diff
 diff --git a/charts/myapi/templates/configmap.yaml b/charts/myapi/templates/configmap.yaml
@@ -1445,9 +1470,9 @@ index 0449698..a554438 100644
 {{< /collapse >}}
 
 
-### Configure GitHub Actions Workflow
+### 設定 GitHub Actions Workflow
 
-Copy and past following lines to create GitHub Actions workflow file in the `main` branch at `.github/workflows/release.yml`:
+將以下內容複製並貼上至終端機，這會在 `main` 分支的 `.github/workflows/release.yml` 中建立一個 GitHub Actions Workflow 檔案：
 ```yaml
 mkdir -p .github/workflows
 cat << 'EOT' > .github/workflows/release.yml
@@ -1480,18 +1505,18 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
 EOT
 ```
-You can find this GitHub Actions workflow configuration file in [GitHub Actions Workflow](https://helm.sh/docs/howto/chart_releaser_action/#github-actions-workflow).
-The above configuration uses [@helm/chart-releaser-action](https://github.com/helm/chart-releaser-action) to turn your GitHub project into a self-hosted Helm chart repo. It does this - during every push to main - by checking each chart in your project, and whenever there's a new chart version, creates a corresponding GitHub release named for the chart version, adds Helm chart artifacts to the release, and creates or updates an index.yaml file with metadata about those releases, which is then hosted on GitHub pages.
 
+您可以在 GitHub Actions Workflow 中找到這個 GitHub Actions 工作流程配置檔案。
+這個配置使用了 [@helm/chart-releaser-action](https://github.com/helm/chart-releaser-action) 將您的 GitHub 專案轉變為自我託管的 Helm chart repo。它會在每次推送到 `main` 時檢查您專案中的每個 chart，並在有新的 chart 版本時，建立對應的 GitHub release，該 release 以 chart 版本命名，並將 Helm chart 檔案添加到該 release 中，然後建立或更新 `index.yaml` 檔案，該檔案包含有關這些 release 的 metadata 並託管在 GitHub Pages 上。
 
-When you are ready, add all changes into the commit and push to the remote main branch:
+當您準備好時，將所有更改添加到提交並推送到遠端的 `main` 分支：
 ```bash
 git add --all
 git commit -m lab5
 git push origin main
 ```
 
-Wait for a while for the GitHub Actions workflow. You will have an [index.yaml](https://mansunkuo.github.io/k8s-summit-2024/index.yaml) appear in the root of both gh-pages branch and pages like this:
+稍微等候一下 GitHub Actions Workflow。您將在 `gh-pages` 分支和頁面的根目錄中看到一個 `index.yaml`，其內容大致如下：
 ```yaml
 apiVersion: v1
 entries:
@@ -1532,19 +1557,19 @@ entries:
 generated: "2024-10-05T16:02:23.746987961Z"
 ```
 
-Your release will also be available under [Releases](https://github.com/mansunkuo/k8s-summit-2024/releases).
+您的 release 也會出現在您的 [Releases](https://github.com/mansunkuo/k8s-summit-2024/releases)。
 
-### Install a Remote Chart
-We've added a READOME in the previous step. Most imkportant instruction are available in the README of the chart. Here are some execution result.
+### 安裝遠端的 Chart
+我們在前一步中已經新增了 README 檔案。大部分重要的說明都在 chart 的 README 中可以找到。以下是一些執行結果。
 
-Add the repo:
+新增 repo:
 ```bash
 ❯ helm repo add mansunkuo-k8s-summit-2024 https://mansunkuo.github.io/k8s-summit-2024
 "mansunkuo-k8s-summit-2024" has been added to your repositories
 ```
 <br>
 
-List chart repositories:
+列出 chart repositories:
 ```bash
 ❯ helm repo list
 NAME                            URL                                        
@@ -1552,7 +1577,7 @@ mansunkuo-k8s-summit-2024       https://mansunkuo.github.io/k8s-summit-2024
 ```
 <br>
 
-Search the chart:
+搜尋 chart:
 ```bash
 ❯ helm search repo mansunkuo-k8s-summit-2024
 NAME                            CHART VERSION   APP VERSION     DESCRIPTION                
@@ -1560,7 +1585,7 @@ mansunkuo-k8s-summit-2024/myapi 0.1.0           1.16.0          A Helm chart for
 ```
 <br>
 
-Install the chart:
+安裝 chart:
 ```bash
 ❯ helm install mansunkuo-myapi mansunkuo-k8s-summit-2024/myapi
 NAME: mansunkuo-myapi
@@ -1576,12 +1601,11 @@ NOTES:
   kubectl --namespace default port-forward $POD_NAME 8080:$CONTAINER_PORT
 ```
 
-Follow the note and you can have your new API endpoint installed with Helm. Thank you for bringing a new Helm chart to the wonderful world.
+就這樣，你已經在自己的環境中發布並安裝了一個新的 Helm chart。感謝你為這個美好的世界帶來一個新的 Helm chart。
 
-## Referernces
+## 參考資料
 - [Chart Releaser Action to Automate GitHub Page Charts](https://helm.sh/docs/howto/chart_releaser_action/)
-- [Artifact Hub - Helm charts repositories](https://artifacthub.io/docs/topics/repositories/helm-charts/)
-- https://docs.github.com/en/pages/quickstart
-- https://helm.sh/docs/topics/chart_repository/
-- https://helm.sh/docs/topics/registries/
+- [Quickstart for GitHub Pages](https://docs.github.com/en/pages/quickstart)
+- [The Chart Repository Guide](https://helm.sh/docs/topics/chart_repository/)
+- [Use OCI-based registries](https://helm.sh/docs/topics/registries/)
 - https://helm.sh/docs/chart_template_guide/debugging/

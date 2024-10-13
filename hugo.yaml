@@ -1,5 +1,5 @@
 baseURL: https://mansunkuo.github.io/
-languageCode: zh-tw
+languageCode: en
 title: Mansun Kuo
 pagination:
   pagerSize: 5
@@ -76,8 +76,8 @@ languages:
           歡迎來到我的個人部落格！我是一名對技術充滿熱情的軟體開發者，熱衷於分享知識、探索創新解決方案，並深入研究開源項目。
           這個空間專門用來記錄我在雲端技術、軟體架構、DevOps、數據工程、機器學習/人工智慧等方面的旅程。
 
-          除了技術探索之外，我也會分享一些我最喜愛的歌曲和相關的想法。我相信你會和我一樣喜歡這些音樂。
-          希望你能在這裡找到激發興趣的內容。隨時歡迎瀏覽我的文章，並在GitHub或LinkedIn上與我聯繫，一起加入討論！
+          除了技術探索之外，我也會分享一些我最喜愛的歌曲和相關的想法，相信你也會和我一樣喜歡這些音樂。
+          希望您能在這裡找到能引起共鳴的內容。隨時歡迎瀏覽我的文章，並在GitHub或LinkedIn上與我聯繫，一起加入討論！
 
 
 outputs:
