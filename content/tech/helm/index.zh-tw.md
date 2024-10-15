@@ -10,7 +10,7 @@ tags:
 author: "Mansun Kuo"
 showToc: true
 TocOpen: true
-draft: true
+draft: false
 hidemeta: false
 comments: false
 # description: "Desc Text."
@@ -39,7 +39,42 @@ cover:
 #     appendFilePath: true # to append file path to Edit link
 ---
 
-這篇文章是這次我在台灣 [Kubnetes Summit 2024](https://k8s.ithome.com.tw/2024/workshop-page/3261) 所帶領的工作坊，在這個實戰工作坊中，我們會介紹一個標準的 Helm Chart 的目錄架構以及裡面各個元件的基本設定，帶著您從無到有建立一個自己的 Helm Chart，使用 Helm Template 以及 Helm dependency 寫出容易使用以及可擴展的 Helm Chart，並實際使用 GitHub Page 以及 GitHub Action 讓您最新版本的 Helm Chart 可以透過 Helm Repo更容易分享給別人，最後會再讓大家實際去使用自己或是其他學員所包好的 Helm Chart 來部署在自己的 Kubernetes 叢集，順便熟悉一些重要的指令以及使用上的一些小技巧。文章很長，還請善用目錄來幫您快速跳轉到你想去的地方。
+這篇文章是這次我在台灣 [Kubnetes Summit 2024](https://k8s.ithome.com.tw/2024/workshop-page/3261) 所帶領的工作坊，在這個實戰工作坊中，我們會介紹一個標準的 Helm Chart 的目錄架構以及裡面各個元件的基本設定，帶著您從無到有建立一個自己的 Helm Chart，使用 Helm Template 以及 Helm dependency 寫出容易使用以及可擴展的 Helm Chart，並實際使用 GitHub Pages 以及 GitHub Action 讓您最新版本的 Helm Chart 可以透過 Helm Repo 更容易分享給別人。文章很長，還請善用目錄來幫您快速跳轉到你想去的地方。
+
+## 環境設定
+### Git
+請參考 [Getting Started - Installing Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)，並確保 `git` 這個指令有加入到環境變數 `PATH`，成功安裝後就可以在您的命令列使用 `git`:
+```bash
+❯ git version
+git version 2.43.0
+```
+
+> 這個課程會使用 Ubuntu 24.04 進行教學，如果您在 Windows 遇到環境變數的問題，可以參考[這篇文章](https://stackoverflow.com/questions/4492979/error-git-is-not-recognized-as-an-internal-or-external-command)進行設定。
+
+我們會使用 [GitHub](https://github.com/)，若您還沒有帳號，請先註冊一個帳號。
+
+### Kubernetes
+這個工作坊會需要一個 Kubernetes 叢集以及可以讀寫 Secret 物件的 namespace ，若您還沒有自己的 Kubernetes 叢集，其中一種方便的方法是在自己的個人電腦安裝 Docker Desktop：
+- [Mac](https://docs.docker.com/desktop/install/mac-install/)
+- [Windows](https://docs.docker.com/desktop/install/windows-install/)
+- [Linux](https://docs.docker.com/desktop/install/linux-install/)
+
+並啟用其所附贈的 [Kubernetes](https://docs.docker.com/desktop/kubernetes/) ，本課程也會使用這個環境進行教學。
+
+若您的環境還沒有 `kubectl`，請參考 [Install and Set Up kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl) 進行安裝，設定完成之後就可以在命令列使用 `kubectl`：
+```bash
+❯ kubectl version
+Client Version: v1.30.2
+Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
+Server Version: v1.30.2
+```
+
+### Helm
+請參考 [Installing Helm](https://helm.sh/docs/intro/install/) 進行安裝，成功設定之後就可以在命令列使用 `helm`：
+```bash
+❯ helm version
+version.BuildInfo{Version:"v3.15.2", GitCommit:"1a500d5625419a524fdae4b33de351cc4f58ec35", GitTreeState:"clean", GoVersion:"go1.22.4"}
+```
 
 ## 練習一: 創建您的第一個 Helm Chart
 
@@ -367,11 +402,8 @@ Helm chart 中的 NOTES.txt 文件在圖表安裝後為用戶提供有用的信�
 
 ### 安裝本地的 local Helm chart
 要在不更改目錄的情況下安裝 Helm chart，您可以在執行 helm install 命令時指定 chart 的完整路徑。例如，安裝一個名為 `myapi-release` 的 helm release：
-```bash
-helm install myapi-release ./charts/myapi
-```
 
-{{< collapse openByDefault=false summary="helm install myapi-release ./charts/myapi" >}}
+{{< collapse openByDefault=true summary="helm install myapi-release ./charts/myapi" >}}
 ```bash
 ❯ helm install myapi-release ./charts/myapi
 NAME: myapi-release
@@ -392,11 +424,8 @@ NOTES:
 
 #### 列出已安裝的 Helm releases
 這個命令會列出指定命名空間的所有 releases（如果未指定命名空間，則使用當前的命名空間）。例如：
-```bash
-helm list
-```
 
-{{< collapse openByDefault=false summary="helm list" >}}
+{{< collapse openByDefault=true summary="helm list" >}}
 ```bash
 ❯ helm list
 NAME            NAMESPACE       REVISION        UPDATED                                        STATUS          CHART           APP VERSION
@@ -406,11 +435,8 @@ myapi-release   default         1               2024-09-18 01:48:22.904366277 +0
 
 #### 獲取有關特定 Helm release 的詳細資訊
 此命令顯示指定名稱釋出的狀態。例如：
-```bash
-helm status myapi-release
-```
 
-{{< collapse openByDefault=false summary="helm status myapi-release" >}}
+{{< collapse openByDefault=true summary="helm status myapi-release" >}}
 ```bash
 ❯ helm status myapi-release
 NAME: myapi-release
@@ -429,13 +455,14 @@ NOTES:
 
 您可以複製貼上 Helm chart 提供的註解，然後訪問 [http://127.0.0.1:8080](http://127.0.0.1:8080)。這是一個大家都很熟悉的 nginx 歡迎頁面。
 
-#### 獲取由 Helm chart 創建的所有資源
-```bash
-kubectl get all -l app.kubernetes.io/instance=myapi-release
-```
-此命令列出所有具有 `app.kubernetes.io/instance=myapi-release` 這個標籤的 Kubernetes 資源。這個標籤通常表示這些資源是特定 Helm release 或應用實例的一部分。
+> 若您是使用 PowerShell，會需要稍微改動一下語法，例如：
+> ```powershell
+> $POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=myapi,app.kubernetes.io/instance=myapi-release" -o jsonpath="{.items[0].metadata.name}")
+> $CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+> ```
 
-{{< collapse openByDefault=false summary="kubectl get all -l app.kubernetes.io/instance=myapi-release" >}}
+#### 獲取由 Helm chart 創建的所有資源
+{{< collapse openByDefault=true summary="kubectl get all -l app.kubernetes.io/instance=myapi-release" >}}
 ```bash
 ❯ kubectl get all -l app.kubernetes.io/instance=myapi-release
 NAME                                 READY   STATUS    RESTARTS   AGE
@@ -451,6 +478,9 @@ NAME                                       DESIRED   CURRENT   READY   AGE
 replicaset.apps/myapi-release-54b5c4d9c8   1         1         1       2m19s
 ```
 {{< /collapse >}}
+
+此命令會列出所有具有 `app.kubernetes.io/instance=myapi-release` 這個標籤的 Kubernetes 資源。這個標籤通常表示這些資源是特定 Helm release 或應用實例的一部分。
+
 
 ## 練習二：將其修改為 API
 在這個練習中，我們將修改這個 Helm chart，以創建 [FastAPI](https://fastapi.tiangolo.com/) 的 API 實例。
@@ -1604,8 +1634,9 @@ NOTES:
 就這樣，你已經在自己的環境中發布並安裝了一個新的 Helm chart。感謝你為這個美好的世界帶來一個新的 Helm chart。
 
 ## 參考資料
-- [Chart Releaser Action to Automate GitHub Page Charts](https://helm.sh/docs/howto/chart_releaser_action/)
+- [Bring Your Helm Chart to the Wonderful World](https://docs.google.com/presentation/d/1zE2GDQ-PjGAmFcIIOyki-v6EFtUSpEAfp1rF3bJWqEs/edit?usp=sharing)
+
 - [Quickstart for GitHub Pages](https://docs.github.com/en/pages/quickstart)
+- [Chart Releaser Action to Automate GitHub Page Charts](https://helm.sh/docs/howto/chart_releaser_action/)
 - [The Chart Repository Guide](https://helm.sh/docs/topics/chart_repository/)
 - [Use OCI-based registries](https://helm.sh/docs/topics/registries/)
-- https://helm.sh/docs/chart_template_guide/debugging/

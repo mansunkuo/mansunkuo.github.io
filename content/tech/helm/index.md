@@ -10,7 +10,7 @@ tags:
 author: "Mansun Kuo"
 showToc: true
 TocOpen: true
-draft: true
+draft: false
 hidemeta: false
 comments: false
 # description: "Desc Text."
@@ -38,7 +38,39 @@ cover:
 #     appendFilePath: true # to append file path to Edit link
 ---
 
-This article is about the workshop I conducted at the Kubernetes Summit 2024 in Taiwan. In this practical workshop, we will introduce a standard Helm Chart directory structure and the basic settings of its various components. I will guide you through creating your own Helm Chart from scratch, using Helm Template and Helm dependency to write an easy-to-use and scalable Helm Chart. We will also use GitHub Pages and GitHub Actions to help share the latest version of your Helm Chart more easily through Helm Repo. Finally, everyone will get hands-on experience using their own or other participants' packaged Helm Charts to deploy on their own Kubernetes clusters, while also becoming familiar with some important commands and practical tips. The article is lengthy, so please make good use of the table of contents to quickly jump to the sections you want to explore.
+This article is about the workshop I conducted at the Kubernetes Summit 2024 in Taiwan. In this practical workshop, we will introduce a standard Helm Chart directory structure and the basic settings of its various components. I will guide you through creating your own Helm Chart from scratch, using Helm Template and Helm dependency to write an easy-to-use and scalable Helm Chart. We will also use GitHub Pages and GitHub Actions to help share the latest version of your Helm Chart more easily through Helm Repo. The article is lengthy, so please make good use of the table of contents to quickly jump to the sections you want to explore.
+
+## Environment Setup
+### Git
+Please refer to Getting Started - Installing Git, and make sure the `git` command is added to your environment variable PATH. Once installed successfully, you can use `git` in your command line:
+```bash
+❯ git version
+git version 2.43.0
+```
+> This course will use Ubuntu 24.04 for instruction. If you encounter issues with environment variables on Windows, you can refer to [this article](https://stackoverflow.com/questions/4492979/error-git-is-not-recognized-as-an-internal-or-external-command) for configuration help.
+
+### Kubernetes
+This workshop will require a Kubernetes cluster and a namespace that has permission to read and write Secret objects. If you don’t have your own Kubernetes cluster, one convenient method is to install Docker Desktop on your personal computer:
+- [Mac](https://docs.docker.com/desktop/install/mac-install/)
+- [Windows](https://docs.docker.com/desktop/install/windows-install/)
+- [Linux](https://docs.docker.com/desktop/install/linux-install/)
+
+Enable the included [Kubernetes](https://docs.docker.com/desktop/kubernetes/) feature, which will also be used in this course.
+
+If your environment doesn't have `kubectl` yet, please follow the instructions at [Install and Set Up kubectl](https://kubernetes.io/docs/tasks/tools/#kubectl). After installation, you should be able to use `kubectl` in your command line:
+```bash
+❯ kubectl version
+Client Version: v1.30.2
+Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
+Server Version: v1.30.2
+```
+
+### Helm
+Please follow [Installing Helm](https://helm.sh/docs/intro/install/) to install Helm. Once successfully set up, you can use `helm` in your command line:
+```bash
+❯ helm version
+version.BuildInfo{Version:"v3.15.2", GitCommit:"1a500d5625419a524fdae4b33de351cc4f58ec35", GitTreeState:"clean", GoVersion:"go1.22.4"}
+```
 
 ## Exercise 1: Create your first Helm chart
 
@@ -355,11 +387,8 @@ This directory is used to store any dependent charts. If your chart relies on ot
 
 ### Install a local Helm chart
 To install the Helm chart without changing directories, you can specify the full path to the chart when running the helm install command. For example, to install a Helm release called `myapi-release`:
-```bash
-helm install myapi-release ./charts/myapi
-```
 
-{{< collapse openByDefault=false summary="helm install myapi-release ./charts/myapi" >}}
+{{< collapse openByDefault=true summary="helm install myapi-release ./charts/myapi" >}}
 ```bash
 ❯ helm install myapi-release ./charts/myapi
 NAME: myapi-release
@@ -380,11 +409,8 @@ Here are some commands you can use to check the status and details of your Helm 
 
 #### List installed Helm releases
 This command lists all of the releases for a specified namespace (uses current namespace context if namespace not specified). For example:
-```bash
-helm list
-```
 
-{{< collapse openByDefault=false summary="helm list" >}}
+{{< collapse openByDefault=true summary="helm list" >}}
 ```bash
 ❯ helm list
 NAME            NAMESPACE       REVISION        UPDATED                                        STATUS          CHART           APP VERSION
@@ -394,11 +420,8 @@ myapi-release   default         1               2024-09-18 01:48:22.904366277 +0
 
 #### Get detailed information about a specific Helm release
 This command shows the status of a named release. For example:
-```bash
-helm status myapi-release
-```
 
-{{< collapse openByDefault=false summary="helm status myapi-release" >}}
+{{< collapse openByDefault=true summary="helm status myapi-release" >}}
 ```bash
 ❯ helm status myapi-release
 NAME: myapi-release
@@ -415,15 +438,17 @@ NOTES:
 ```
 {{< /collapse >}}
 
-you can copy and paste the notes provides by the Helm chart and visit [http://127.0.0.1:8080](http://127.0.0.1:8080). It is a typical welcome page of nginx. 
+You can copy and paste the notes provides by the Helm chart and visit [http://127.0.0.1:8080](http://127.0.0.1:8080). It is a typical welcome page of nginx. 
+
+> If you are using PowerShell, you may need to translate the notes . For example:
+> ```powershell
+> $POD_NAME=$(kubectl get pods --namespace default -l "app.kubernetes.io/name=myapi,app.kubernetes.io/instance=myapi-release" -o jsonpath="{.items[0].metadata.name}")
+> $CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
+> ```
 
 #### Get all resources created by the Helm chart
-```bash
-kubectl get all -l app.kubernetes.io/instance=myapi-release
-```
-This command lists all Kubernetes resources that have the label `app.kubernetes.io/instance=myapi-release`. This label typically indicates that these resources are part of a specific Helm release or application instance.
 
-{{< collapse openByDefault=false summary="kubectl get all -l app.kubernetes.io/instance=myapi-release" >}}
+{{< collapse openByDefault=true summary="kubectl get all -l app.kubernetes.io/instance=myapi-release" >}}
 ```bash
 ❯ kubectl get all -l app.kubernetes.io/instance=myapi-release
 NAME                                 READY   STATUS    RESTARTS   AGE
@@ -439,6 +464,8 @@ NAME                                       DESIRED   CURRENT   READY   AGE
 replicaset.apps/myapi-release-54b5c4d9c8   1         1         1       2m19s
 ```
 {{< /collapse >}}
+
+This command lists all Kubernetes resources that have the label `app.kubernetes.io/instance=myapi-release`. This label typically indicates that these resources are part of a specific Helm release or application instance.
 
 ## Exercise 2: Modify it as an API
 In this exercise, we will modify this Helm chart to create an API instance of [FastAPI](https://fastapi.tiangolo.com/).
@@ -1591,9 +1618,8 @@ NOTES:
 That's it. You've published and installed a new Helm chart on your own. Thank you for bringing a new Helm chart to the wonderful world.
 
 ## References
+- [Bring Your Helm Chart to the Wonderful World](https://docs.google.com/presentation/d/1zE2GDQ-PjGAmFcIIOyki-v6EFtUSpEAfp1rF3bJWqEs/edit?usp=sharing)
+- [Quickstart for GitHub Pages](https://docs.github.com/en/pages/quickstart)
 - [Chart Releaser Action to Automate GitHub Page Charts](https://helm.sh/docs/howto/chart_releaser_action/)
-- [Artifact Hub - Helm charts repositories](https://artifacthub.io/docs/topics/repositories/helm-charts/)
-- https://docs.github.com/en/pages/quickstart
-- https://helm.sh/docs/topics/chart_repository/
-- https://helm.sh/docs/topics/registries/
-- https://helm.sh/docs/chart_template_guide/debugging/
+- [The Chart Repository Guide](https://helm.sh/docs/topics/chart_repository/)
+- [Use OCI-based registries](https://helm.sh/docs/topics/registries/)
