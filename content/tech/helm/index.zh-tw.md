@@ -1438,8 +1438,38 @@ git checkout main
 
 ### 對您的 Helm chart 進行最後的調整
 
-將以下指令複製並貼上至終端機，為您的 Helm chart 新增 `charts/myapi/README.md`。記得將 `ORGNAME` 替換為您的 GitHub 帳號。
+為您的 Helm chart 新增 `charts/myapi/README.md`，請將下列字串進行替換：
+- `<alias>` -> `$YOUR_GITHUB_ACCOUNT-k8s-summit-2024`
+- `<orgname>` -> `$YOUR_GITHUB_ACCOUNT`
+- `<chart-name>` -> `myapi`
+- `helm-charts` -> `k8s-summit-2024`
+
+{{< collapse openByDefault=true summary="Bash: create charts/$CHART_NAME/README.md" >}}
 ```markdown
+## Usage
+
+[Helm](https://helm.sh) must be installed to use the charts.  Please refer to
+Helm's [documentation](https://helm.sh/docs) to get started.
+
+Once Helm has been set up correctly, add the repo as follows:
+
+    helm repo add <alias> https://<orgname>.github.io/helm-charts
+
+If you had already added this repo earlier, run `helm repo update` to retrieve the latest versions of the packages.  You can then run `helm search repo <alias>` to see the charts.
+
+To install the <chart-name> chart:
+
+    helm install <orgname>-<chart-name> <alias>/<chart-name>
+
+To uninstall the chart:
+
+    helm delete <orgname>-<chart-name>
+```
+{{< /collapse >}}
+
+> 若您使用的是 Mac 或 Linux 且 `$USER` 剛好就是您的 GitHub 帳號，可以直接複製貼上以下指令：
+> {{< collapse openByDefault=false summary="Bash: create charts/$CHART_NAME/README.md" >}}
+```bash
 # Define variables
 ALIAS=$USER-k8s-summit-2024
 ORGNAME=$USER
@@ -1471,14 +1501,15 @@ To uninstall the chart:
     helm delete <orgname>-<chart-name>
 EOT
 ```
+{{< /collapse >}}
 
 為整個 repository 新增一個 README。
-```bash
-cat << 'EOT' > README.md
+{{< collapse openByDefault=true summary="README.md" >}}
+```markdown
 # k8s-summit-2024
 A sample helm chart repo created in k8s summit 2024.
-EOT
 ```
+{{< /collapse >}}
 
 將你的名字加入 API 以方便辨識：
 {{< collapse openByDefault=true summary="git diff charts/myapi/templates/configmap.yaml" >}}
@@ -1502,10 +1533,10 @@ index 0449698..a554438 100644
 
 ### 設定 GitHub Actions Workflow
 
-將以下內容複製並貼上至終端機，這會在 `main` 分支的 `.github/workflows/release.yml` 中建立一個 GitHub Actions Workflow 檔案：
+在 `.github/workflows/release.yml` 建立一個 GitHub Actions Workflow 檔案：
+
+{{< collapse openByDefault=true summary=".github/workflows/release.yml" >}}
 ```yaml
-mkdir -p .github/workflows
-cat << 'EOT' > .github/workflows/release.yml
 name: Release Charts
 
 on:
@@ -1533,10 +1564,10 @@ jobs:
         uses: helm/chart-releaser-action@v1.6.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-EOT
 ```
+{{< /collapse >}}
 
-您可以在 GitHub Actions Workflow 中找到這個 GitHub Actions 工作流程配置檔案。
+您可以在 [GitHub Actions Workflow](https://helm.sh/docs/howto/chart_releaser_action/#github-actions-workflow) 中找到這個 GitHub Actions 工作流程配置檔案。
 這個配置使用了 [@helm/chart-releaser-action](https://github.com/helm/chart-releaser-action) 將您的 GitHub 專案轉變為自我託管的 Helm chart repo。它會在每次推送到 `main` 時檢查您專案中的每個 chart，並在有新的 chart 版本時，建立對應的 GitHub release，該 release 以 chart 版本命名，並將 Helm chart 檔案添加到該 release 中，然後建立或更新 `index.yaml` 檔案，該檔案包含有關這些 release 的 metadata 並託管在 GitHub Pages 上。
 
 當您準備好時，將所有更改添加到提交並推送到遠端的 `main` 分支：
@@ -1634,8 +1665,8 @@ NOTES:
 就這樣，你已經在自己的環境中發布並安裝了一個新的 Helm chart。感謝你為這個美好的世界帶來一個新的 Helm chart。
 
 ## 參考資料
-- [Bring Your Helm Chart to the Wonderful World](https://docs.google.com/presentation/d/1zE2GDQ-PjGAmFcIIOyki-v6EFtUSpEAfp1rF3bJWqEs/edit?usp=sharing)
-
+- [Kubernetes Summit 2024 - Workshop](https://k8s.ithome.com.tw/2024/workshop-page/3261)
+- [Kubernetes Summit 2024 - Slides](https://docs.google.com/presentation/d/1zE2GDQ-PjGAmFcIIOyki-v6EFtUSpEAfp1rF3bJWqEs/edit?usp=sharing)
 - [Quickstart for GitHub Pages](https://docs.github.com/en/pages/quickstart)
 - [Chart Releaser Action to Automate GitHub Page Charts](https://helm.sh/docs/howto/chart_releaser_action/)
 - [The Chart Repository Guide](https://helm.sh/docs/topics/chart_repository/)

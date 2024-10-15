@@ -1423,8 +1423,38 @@ Follow step 6 to step 9 in [Quickstart for GitHub Pages](https://docs.github.com
 
 ### Final Adjustment for Your Helm Chart
 
-Copy and paste following lines to a terminal to add `charts/myapi/README.md` for your Helm chart. Remember to replace `ORGNAME` as your GitHub account.
+Add `charts/myapi/README.md` for your Helm chart. Remember to replace following string:
+- `<alias>` -> `$YOUR_GITHUB_ACCOUNT-k8s-summit-2024`
+- `<orgname>` -> `$YOUR_GITHUB_ACCOUNT`
+- `<chart-name>` -> `myapi`
+- `helm-charts` -> `k8s-summit-2024`
+
+{{< collapse openByDefault=true summary="Bash: create charts/$CHART_NAME/README.md" >}}
 ```markdown
+## Usage
+
+[Helm](https://helm.sh) must be installed to use the charts.  Please refer to
+Helm's [documentation](https://helm.sh/docs) to get started.
+
+Once Helm has been set up correctly, add the repo as follows:
+
+    helm repo add <alias> https://<orgname>.github.io/helm-charts
+
+If you had already added this repo earlier, run `helm repo update` to retrieve the latest versions of the packages.  You can then run `helm search repo <alias>` to see the charts.
+
+To install the <chart-name> chart:
+
+    helm install <orgname>-<chart-name> <alias>/<chart-name>
+
+To uninstall the chart:
+
+    helm delete <orgname>-<chart-name>
+```
+{{< /collapse >}}
+
+> If you are using Mac/Linux and `$USER` is exactly equal to your GitHub account, you can copy and paste following command:
+> {{< collapse openByDefault=false summary="Bash: create charts/$CHART_NAME/README.md" >}}
+```bash
 # Define variables
 ALIAS=$USER-k8s-summit-2024
 ORGNAME=$USER
@@ -1456,14 +1486,15 @@ To uninstall the chart:
     helm delete <orgname>-<chart-name>
 EOT
 ```
+{{< /collapse >}}
 
 Add a README for your whole repository.
-```bash
-cat << 'EOT' > README.md
+{{< collapse openByDefault=true summary="README.md" >}}
+```markdown
 # k8s-summit-2024
 A sample helm chart repo created in k8s summit 2024.
-EOT
 ```
+{{< /collapse >}}
 
 Add your name into the API to make it easier to be recognize:
 {{< collapse openByDefault=true summary="git diff charts/myapi/templates/configmap.yaml" >}}
@@ -1487,10 +1518,10 @@ index 0449698..a554438 100644
 
 ### Configure GitHub Actions Workflow
 
-Copy and past following lines to a terminal to create GitHub Actions workflow file in the `main` branch at `.github/workflows/release.yml`:
+Create a GitHub Actions workflow file at `.github/workflows/release.yml`:
+
+{{< collapse openByDefault=true summary=".github/workflows/release.yml" >}}
 ```yaml
-mkdir -p .github/workflows
-cat << 'EOT' > .github/workflows/release.yml
 name: Release Charts
 
 on:
@@ -1518,8 +1549,9 @@ jobs:
         uses: helm/chart-releaser-action@v1.6.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-EOT
 ```
+{{< /collapse >}}
+
 You can find this GitHub Actions workflow configuration file in [GitHub Actions Workflow](https://helm.sh/docs/howto/chart_releaser_action/#github-actions-workflow).
 This configuration uses [@helm/chart-releaser-action](https://github.com/helm/chart-releaser-action) to turn your GitHub project into a self-hosted Helm chart repo. It does this - during every push to `main` - by checking each chart in your project, and whenever there's a new chart version, creates a corresponding GitHub release named for the chart version, adds Helm chart artifacts to the release, and creates or updates an `index.yaml` file with metadata about those releases, which is then hosted on GitHub pages.
 
@@ -1618,7 +1650,8 @@ NOTES:
 That's it. You've published and installed a new Helm chart on your own. Thank you for bringing a new Helm chart to the wonderful world.
 
 ## References
-- [Bring Your Helm Chart to the Wonderful World](https://docs.google.com/presentation/d/1zE2GDQ-PjGAmFcIIOyki-v6EFtUSpEAfp1rF3bJWqEs/edit?usp=sharing)
+- [Kubernetes Summit 2024 - Workshop](https://k8s.ithome.com.tw/2024/workshop-page/3261)
+- [Kubernetes Summit 2024 - Slides](https://docs.google.com/presentation/d/1zE2GDQ-PjGAmFcIIOyki-v6EFtUSpEAfp1rF3bJWqEs/edit?usp=sharing)
 - [Quickstart for GitHub Pages](https://docs.github.com/en/pages/quickstart)
 - [Chart Releaser Action to Automate GitHub Page Charts](https://helm.sh/docs/howto/chart_releaser_action/)
 - [The Chart Repository Guide](https://helm.sh/docs/topics/chart_repository/)
