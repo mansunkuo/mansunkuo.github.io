@@ -72,7 +72,7 @@ Please follow [Installing Helm](https://helm.sh/docs/intro/install/) to install 
 version.BuildInfo{Version:"v3.15.2", GitCommit:"1a500d5625419a524fdae4b33de351cc4f58ec35", GitTreeState:"clean", GoVersion:"go1.22.4"}
 ```
 
-## Exercise 1: Create your first Helm chart
+## Exercise 1: Create Your First Helm Chart
 
 Let's create a folder called `k8s-summit-2024`:
 ```bash
@@ -100,7 +100,7 @@ charts/myapi/
 
 Here's an explanation of each file and folder:
 
-### Common files in a Helm chart
+### Common Files in a Helm Chart
 #### Chart.yaml
 
 This file contains metadata about the Helm chart, including the chart's name, version, and other descriptive information.
@@ -385,7 +385,7 @@ This file defines patterns for files and directories that should be excluded whe
 #### charts/
 This directory is used to store any dependent charts. If your chart relies on other charts (e.g., a database), those charts can be placed here.
 
-### Install a local Helm chart
+### Install a Local Helm Chart
 To install the Helm chart without changing directories, you can specify the full path to the chart when running the helm install command. For example, to install a Helm release called `myapi-release`:
 
 {{< collapse openByDefault=true summary="helm install myapi-release ./charts/myapi" >}}
@@ -407,7 +407,7 @@ NOTES:
 
 Here are some commands you can use to check the status and details of your Helm releases and the resources they have deployed:
 
-#### List installed Helm releases
+#### List Installed Helm Releases
 This command lists all of the releases for a specified namespace (uses current namespace context if namespace not specified). For example:
 
 {{< collapse openByDefault=true summary="helm list" >}}
@@ -418,7 +418,7 @@ myapi-release   default         1               2024-09-18 01:48:22.904366277 +0
 ```
 {{< /collapse >}}
 
-#### Get detailed information about a specific Helm release
+#### Get Detailed Information About a Specific Helm Release
 This command shows the status of a named release. For example:
 
 {{< collapse openByDefault=true summary="helm status myapi-release" >}}
@@ -446,7 +446,7 @@ You can copy and paste the notes provides by the Helm chart and visit [http://12
 > $CONTAINER_PORT=$(kubectl get pod --namespace default $POD_NAME -o jsonpath="{.spec.containers[0].ports[0].containerPort}")
 > ```
 
-#### Get all resources created by the Helm chart
+#### Get All Resources Created by the Helm Chart
 
 {{< collapse openByDefault=true summary="kubectl get all -l app.kubernetes.io/instance=myapi-release" >}}
 ```bash
@@ -467,10 +467,10 @@ replicaset.apps/myapi-release-54b5c4d9c8   1         1         1       2m19s
 
 This command lists all Kubernetes resources that have the label `app.kubernetes.io/instance=myapi-release`. This label typically indicates that these resources are part of a specific Helm release or application instance.
 
-## Exercise 2: Modify it as an API
+## Exercise 2: Modify It as an API
 In this exercise, we will modify this Helm chart to create an API instance of [FastAPI](https://fastapi.tiangolo.com/).
 
-### Add API endpoints
+### Add API Endpoints
 Let's add API endpoints in a ConfigMap using. Embedding your FastAPI application code directly into a ConfigMap is unconventional, as ConfigMaps are meant for configuration data rather than application code. We do this here to simplify the process of building our own image. Please don't do this in your formal environment.
 
 {{< collapse openByDefault=true summary="git diff charts/myapi/values.yaml" >}}
@@ -501,7 +501,7 @@ This code is a simple FastAPI web application with two endpoints:
 - **Root endpoint** (`/`): When someone accesses this URL with a GET request, the app returns a static JSON response, like `{"Hello": "World"}`. This is a simple welcome message.
 - **Dynamic "hello" endpoint** (`/hello/{user}`): The URL takes a name or value (like a username) as part of the path. For example, accessing `/hello/Mansun` will pass "Mansun" to the function, and the app will respond with a personalized message: `{"Hello": "Mansun"}`.
 
-### Replace the container image and expose the command and arguments 
+### Replace the Container Image and Expose the Command and Arguments 
 Let's modify the values.yaml of our Helm chart.
 
 {{< collapse openByDefault=true summary="git diff charts/myapi/values.yaml" >}}
@@ -675,7 +675,7 @@ affinity: {}
 {{< /collapse >}}
 
 
-### Mount volume and refine depoloyment
+### Mount Volume and Refine Depoloyment
 {{< collapse openByDefault=true summary="git diff charts/myapi/templates/deployment.yaml" >}}
 ```diff
 diff --git a/charts/myapi/templates/deployment.yaml b/charts/myapi/templates/deployment.yaml
@@ -734,7 +734,7 @@ A new volume named `app-code` is defined, which references a ConfigMap that cont
 A new mount (`app-code`) is introduced, and existing volumeMounts and volumes are still handled using the `with` directive for any additional values in `.Values.volumeMounts` and `.Values.volumes`.
 
 
-### Upgrade the Helm release 
+### Upgrade the Helm Release
 
 Let's upgrade the Helm release to make our new API available:
 ```bash
@@ -953,10 +953,10 @@ myapi-release   default         4               2024-09-18 02:38:42.936136839 +0
 
 It populates a new revision from the revision you assigned.
 
-## Exercise 3: Why my secret is not updated
+## Exercise 3: Why My Secret Is Not Updated
 Let's add a random passcode in our API.
 
-### Add a random secret and encode it
+### Add a Random Secret and Encode It
 Helm provides a lot of handy [template functions and pipelines](https://helm.sh/docs/chart_template_guide/functions_and_pipelines/). You can find more useful template functions in [Template Function List](https://helm.sh/docs/chart_template_guide/function_list/). For example, here is a k8s secret object with a random 10-digit passcode. We also pipe it into another function that encode a string in base64 encoding. 
 
 {{< collapse openByDefault=true summary="charts/myapi/templates/secret.yaml" >}}
@@ -973,7 +973,7 @@ data:
 ```
 {{< /collapse >}}
 
-### Mount the secret on the deployment
+### Mount the Secret on the Deployment
 Let's mount our secret as an environment variable on the deployment. No special trick here, just remember to reuse template function, `myapi.fullname` which generated by `helm create`.
 
 ```diff
@@ -996,7 +996,7 @@ index ae95687..172c1b5 100644
                containerPort: {{ .Values.containerPort }}
 ```
 
-### Consume the environment variable
+### Consume the Environment Variable
 ```diff
 diff --git a/charts/myapi/templates/configmap.yaml b/charts/myapi/templates/configmap.yaml
 index 9d96063..0449698 100644
@@ -1020,7 +1020,7 @@ index 9d96063..0449698 100644
      def hello(user: str):
 ```
 
-### What's wrong
+### What's Wrong
 Let's upgrade our Helm release and check the contents of the secret:
 ```bash
 helm upgrade --install myapi-release ./charts/myapi
@@ -1183,14 +1183,14 @@ spec:
 ```
 {{< /collapse >}} 
 
-## Exercise 4: Add a Helm dependency
+## Exercise 4: Add a Helm Dependency
 [Helm dependency](https://helm.sh/docs/helm/helm_dependency/) manage the dependencies of a chart. Helm charts store their dependencies in `charts/`. For chart developers, it is often easier to manage dependencies in `Chart.yaml` which declares all dependencies.
 
 The dependency commands operate on that file, making it easy to synchronize between the desired dependencies and the actual dependencies stored in the `charts/` directory.
 
 The [Bitnami Library for Kubernetes](https://github.com/bitnami/charts) is a Helm repository with various pre-packaged Kubernetes resources that make it easier to deploy common open-source applications and infrastructure components in Kubernetes clusters. There is a special chart, [Bitnami Common Library Chart](https://github.com/bitnami/charts/tree/main/bitnami/common), which groups common logic between Bitnami charts. Let's add it to our Helm chart.
 
-### Add a dependency
+### Add a Dependency
 ```diff
 diff --git a/charts/myapi/Chart.yaml b/charts/myapi/Chart.yaml
 index e1991d4..4b34b58 100644
@@ -1210,7 +1210,7 @@ index e1991d4..4b34b58 100644
 
 `x` represents the latest version for major, minor, or patch in [Semantic Versioning](https://semver.org/).
 
-### Build dependency
+### Build Dependency
 Let's refresh the Helm dependency based on `Chart.yaml`
 ```bash
 ❯ helm dependency update charts/myapi
@@ -1254,7 +1254,7 @@ curl -o .gitignore https://raw.githubusercontent.com/bitnami/charts/refs/heads/m
 ```
 {{< /collapse >}} 
 
-### OCI-based registries and traditional chart repository
+### OCI-based Registries and Traditional Chart Repository
 Beginning in Helm 3, you can use container registries with [OCI (Open Container Initiative)](https://opencontainers.org/) support to store and share chart packages. Beginning in Helm v3.8.0, OCI support is enabled by default. You don't need to use `helm repo add` for an OCI registry (`oci://`) because Helm interacts with OCI registries in a different way than with traditional Helm chart repositories.
 
 Key Differences Between OCI-based registries and Helm Chart Repositories:
@@ -1267,7 +1267,7 @@ Key Differences Between OCI-based registries and Helm Chart Repositories:
 
 With OCI registries, Helm interacts directly with charts using the `oci://` scheme, bypassing the need for `helm repo add` and `index.yaml` files. This is more similar to working with Docker images than traditional Helm chart repositories.
 
-### Apply the dependency
+### Apply the Dependency
 Let's add a place holder of in `values.yaml`:
 
 {{< collapse openByDefault=true summary="git diff charts/myapi/values.yaml" >}}
