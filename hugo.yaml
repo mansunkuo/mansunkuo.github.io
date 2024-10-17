@@ -133,6 +133,8 @@ params:
       In addition to my technical explorations, I'll also share some of my favorite songs and related thoughts. I trust you'll enjoy them as much as I do.
       I hope you'll find something here to spark your interest. Feel free to explore my posts, connect with me on GitHub or LinkedIn, and join the conversation!
 
+  # https://github.com/adityatelange/hugo-PaperMod/issues/1573
+  social: true
   socialIcons:
     - name: linkedin
       title: Visit my Linkedin
