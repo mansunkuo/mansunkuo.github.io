@@ -38,7 +38,7 @@ cover:
 #     appendFilePath: true # to append file path to Edit link
 ---
 
-This article is about the workshop I conducted at the Kubernetes Summit 2024 in Taiwan. In this practical workshop, we will introduce a standard Helm Chart directory structure and the basic settings of its various components. I will guide you through creating your own Helm Chart from scratch, using Helm Template and Helm dependency to write an easy-to-use and scalable Helm Chart. We will also use GitHub Pages and GitHub Actions to help share the latest version of your Helm Chart more easily through Helm Repo. The article is lengthy, so please make good use of the table of contents to quickly jump to the sections you want to explore.
+This article is about the workshop I conducted at the Kubernetes Summit 2024 in Taiwan. In this practical workshop, we will introduce a standard Helm Chart directory structure and the basic settings of its various components. I will guide you through creating your own Helm Chart from scratch, using Helm Template and Helm Dependency to write an easy-to-use and scalable Helm Chart. We will also use GitHub Pages and GitHub Actions to help share the latest version of your Helm Chart more easily through Helm Repo. The article is lengthy, so please make good use of the table of contents to quickly jump to the sections you want to explore.
 
 ## Environment Setup
 ### Git
@@ -382,6 +382,34 @@ The NOTES.txt file in a Helm chart provides helpful information or instructions 
 ##### .helmignore
 This file defines patterns for files and directories that should be excluded when packaging the chart (similar to .gitignore).
 
+{{< collapse openByDefault=true summary="charts/myapi/.helmignore" >}}
+```bash
+# Patterns to ignore when building packages.
+# This supports shell glob matching, relative path matching, and
+# negation (prefixed with !). Only one pattern per line.
+.DS_Store
+# Common VCS dirs
+.git/
+.gitignore
+.bzr/
+.bzrignore
+.hg/
+.hgignore
+.svn/
+# Common backup files
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+# Various IDEs
+.project
+.idea/
+*.tmproj
+.vscode/
+```
+{{< /collapse >}}
+
 #### charts/
 This directory is used to store any dependent charts. If your chart relies on other charts (e.g., a database), those charts can be placed here.
 
@@ -473,7 +501,7 @@ In this exercise, we will modify this Helm chart to create an API instance of [F
 ### Add API Endpoints
 Let's add API endpoints in a ConfigMap using. Embedding your FastAPI application code directly into a ConfigMap is unconventional, as ConfigMaps are meant for configuration data rather than application code. We do this here to simplify the process of building our own image. Please don't do this in your formal environment.
 
-{{< collapse openByDefault=true summary="git diff charts/myapi/values.yaml" >}}
+{{< collapse openByDefault=true summary="charts/myapi/templates/configmap.yaml" >}}
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -499,7 +527,7 @@ data:
 
 This code is a simple FastAPI web application with two endpoints: 
 - **Root endpoint** (`/`): When someone accesses this URL with a GET request, the app returns a static JSON response, like `{"Hello": "World"}`. This is a simple welcome message.
-- **Dynamic "hello" endpoint** (`/hello/{user}`): The URL takes a name or value (like a username) as part of the path. For example, accessing `/hello/Mansun` will pass "Mansun" to the function, and the app will respond with a personalized message: `{"Hello": "Mansun"}`.
+- **Dynamic "hello" endpoint** (`/hello/{user}`): The URL takes a name or value (like a username) as part of the path. For example, accessing `/hello/mansun` will pass "mansun" to the function, and the app will respond with a personalized message: `{"Hello": "mansun"}`.
 
 ### Replace the Container Image and Expose the Command and Arguments 
 Let's modify the values.yaml of our Helm chart.
@@ -776,9 +804,9 @@ Forwarding from [::1]:8080 -> 8080
 Use another terminal to check your API:
 {{< collapse openByDefault=true summary="check API" >}}
 ```bash
-❯ curl localhost:8080
+❯ curl http://localhost:8080
 {"Hello":"World"}%                                                             
-❯ curl localhost:8080/hello/mansun
+❯ curl http://localhost:8080/hello/mansun
 {"Hello":"mansun"}%
 ```
 {{< /collapse >}}
@@ -798,8 +826,12 @@ The type of secret, `helm.sh/release.v1` is specific to Helm. Helm uses this typ
 For example, it is possible to extract the manifest from the secret:
 {{< collapse openByDefault=false summary="Decode Helm release" >}}
 ```yaml
-❯ kubectl get secret sh.helm.release.v1.myapi-release.v2 -o jsonpath="{.data.release}" | base64 --decode | base64 --decode | gunzip | jq -r .manifest
-
+❯ kubectl get secret sh.helm.release.v1.myapi-release.v2 \
+  -o jsonpath="{.data.release}" | \
+  base64 --decode | \
+  base64 --decode | \
+  gunzip | \
+  jq -r .manifest
 ---
 # Source: myapi/templates/serviceaccount.yaml
 apiVersion: v1
@@ -1020,8 +1052,9 @@ index 9d96063..0449698 100644
      def hello(user: str):
 ```
 
-### What's Wrong
-Let's upgrade our Helm release and check the contents of the secret:
+### Upgrade the Helm Release Again
+
+Let's upgrade our Helm release again and check the contents of the secret:
 ```bash
 helm upgrade --install myapi-release ./charts/myapi
 kubectl get secret myapi-release -o jsonpath="{.data.passcode}" | base64 --decode
@@ -1029,7 +1062,7 @@ kubectl get secret myapi-release -o jsonpath="{.data.passcode}" | base64 --decod
 
 You can execute the above code snippet multiple times. The secret will change in every release, but your API will still be using the oldest secret.
 
-{{< collapse openByDefault=false summary="Helm upgrade and check secret" >}}
+{{< collapse openByDefault=true summary="Helm upgrade and check secret" >}}
 ```bash
 ❯ helm upgrade --install myapi-release ./charts/myapi
 Release "myapi-release" has been upgraded. Happy Helming!
@@ -1064,6 +1097,7 @@ RiNr1OQLMd%
 ```
 {{< /collapse >}}
 
+### What's Wrong
 Changes to ConfigMap or Secret objects that are referenced in a pod spec do not trigger a pod rollout on their own, even if the underlying data changes. This is because Kubernetes doesn't watch for changes to those resources by default. Let's add a little trick to make Helm [automatically roll deployments](https://helm.sh/docs/howto/charts_tips_and_tricks/#automatically-roll-deployments):
 
 
@@ -1191,6 +1225,7 @@ The dependency commands operate on that file, making it easy to synchronize betw
 The [Bitnami Library for Kubernetes](https://github.com/bitnami/charts) is a Helm repository with various pre-packaged Kubernetes resources that make it easier to deploy common open-source applications and infrastructure components in Kubernetes clusters. There is a special chart, [Bitnami Common Library Chart](https://github.com/bitnami/charts/tree/main/bitnami/common), which groups common logic between Bitnami charts. Let's add it to our Helm chart.
 
 ### Add a Dependency
+{{< collapse openByDefault=true summary="git diff charts/myapi/Chart.yaml" >}}
 ```diff
 diff --git a/charts/myapi/Chart.yaml b/charts/myapi/Chart.yaml
 index e1991d4..4b34b58 100644
@@ -1207,8 +1242,9 @@ index e1991d4..4b34b58 100644
 +    repository: oci://registry-1.docker.io/bitnamicharts
 \ No newline at end of file
 ```
+{{< /collapse >}}
 
-`x` represents the latest version for major, minor, or patch in [Semantic Versioning](https://semver.org/).
+This change adds a dependency on a Helm chart named common from the Bitnami charts repository. `x` in `version` represents the latest version for major, minor, or patch in [Semantic Versioning](https://semver.org/). It allows any patch version under the major version 2
 
 ### Build Dependency
 Let's refresh the Helm dependency based on `Chart.yaml`
@@ -1429,7 +1465,7 @@ Add `charts/myapi/README.md` for your Helm chart. Remember to replace following 
 - `<chart-name>` -> `myapi`
 - `helm-charts` -> `k8s-summit-2024`
 
-{{< collapse openByDefault=true summary="Bash: create charts/$CHART_NAME/README.md" >}}
+{{< collapse openByDefault=true summary="charts/myapi/README.md" >}}
 ```markdown
 ## Usage
 
@@ -1608,30 +1644,27 @@ Your release will also be available under the [Releases](https://github.com/mans
 ### Install a Remote Chart
 We've added a README in the previous step. Most important instructions are available in the README of the chart. Here are some execution result.
 
-Add the repo:
+#### Add the Repo
 ```bash
 ❯ helm repo add mansunkuo-k8s-summit-2024 https://mansunkuo.github.io/k8s-summit-2024
 "mansunkuo-k8s-summit-2024" has been added to your repositories
 ```
-<br>
 
-List chart repositories:
+#### List Chart Repositories
 ```bash
 ❯ helm repo list
 NAME                            URL                                        
 mansunkuo-k8s-summit-2024       https://mansunkuo.github.io/k8s-summit-2024
 ```
-<br>
 
-Search the chart:
+#### Search the Chart
 ```bash
 ❯ helm search repo mansunkuo-k8s-summit-2024
 NAME                            CHART VERSION   APP VERSION     DESCRIPTION                
 mansunkuo-k8s-summit-2024/myapi 0.1.0           1.16.0          A Helm chart for Kubernetes
 ```
-<br>
 
-Install the chart:
+#### Install the Chart
 ```bash
 ❯ helm install mansunkuo-myapi mansunkuo-k8s-summit-2024/myapi
 NAME: mansunkuo-myapi
@@ -1650,9 +1683,13 @@ NOTES:
 That's it. You've published and installed a new Helm chart on your own. Thank you for bringing a new Helm chart to the wonderful world.
 
 ## References
-- [Kubernetes Summit 2024 - Workshop](https://k8s.ithome.com.tw/2024/workshop-page/3261)
-- [Kubernetes Summit 2024 - Slides](https://docs.google.com/presentation/d/1zE2GDQ-PjGAmFcIIOyki-v6EFtUSpEAfp1rF3bJWqEs/edit?usp=sharing)
-- [Quickstart for GitHub Pages](https://docs.github.com/en/pages/quickstart)
-- [Chart Releaser Action to Automate GitHub Page Charts](https://helm.sh/docs/howto/chart_releaser_action/)
-- [The Chart Repository Guide](https://helm.sh/docs/topics/chart_repository/)
-- [Use OCI-based registries](https://helm.sh/docs/topics/registries/)
+- Kubernetes Summit 2024
+  - [GitHub repository](https://github.com/mansunkuo/k8s-summit-2024)
+  - [Slides](https://docs.google.com/presentation/d/1zE2GDQ-PjGAmFcIIOyki-v6EFtUSpEAfp1rF3bJWqEs/edit?usp=sharing)
+  - [Workshop Page](https://k8s.ithome.com.tw/2024/workshop-page/3261)
+- Helm
+  - [Chart Releaser Action to Automate GitHub Page Charts](https://helm.sh/docs/howto/chart_releaser_action/)
+  - [The Chart Repository Guide](https://helm.sh/docs/topics/chart_repository/)
+  - [Use OCI-based registries](https://helm.sh/docs/topics/registries/)
+- GitHub Pages
+  - [Quickstart for GitHub Pages](https://docs.github.com/en/pages/quickstart)
