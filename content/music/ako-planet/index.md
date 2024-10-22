@@ -42,8 +42,8 @@ cover:
   </iframe>
 </div>
 
-- [Soptify](https://l.facebook.com/l.php?u=https%3A%2F%2Fopen.spotify.com%2Ftrack%2F2JBvAB9MRddsTnvKPxO1bk%3Fsi%3DBuoHOPhxTmiul_GBuToldw%26fbclid%3DIwZXh0bgNhZW0CMTAAAR0W9TCzEGMsCT2KJWKz8TY3OfUASaiayd6J__LLYbQVv49TeH5rZzs8vZE_aem_AdKotYzUb-D1mjqSwz9n--DrEuGj9z7qVncXVsMS3NBcsMy3_CpIG5FqFSqxun2Dz_JjUWcS5PM5En7O2DfaJ7zR&h=AT0XPQWnsBy2Nrm-IS875waQyDWu7PH3FowdSrq-NRwk1EoCxsFkgLcq7kpN9WnXgugN9vs0qy7yhgYcFnjYVmQ1RM4QlqWi9W4jsWoXxCJKrWoCQWzHKYPDtvD1K1rT-g&__tn__=-UK-R&c[0]=AT08j73l0xJ0QOU-Z7iloXYdwlme52dGb-cXDw-2auT3IwS0NIPbcAKLjPNoIBNH65AQfb9-7ec3SXSw9C8FdYiF74nyzfio6nbZQ9wBEy7IJ1RcaJpkvjscs00JcZM5zXGgHi9SWIGcMaedqXKKeXyqY2zxMgbZnX9vC3VU97zidQl-qEOSNw)
-- [KKBOX](https://l.facebook.com/l.php?u=https%3A%2F%2Fwww.kkbox.com%2Ftw%2Ftc%2Fsong%2FCrWTZ6Dxa7_3OYWsoA%3Ffbclid%3DIwZXh0bgNhZW0CMTAAAR0RcEtQ0-LDRDV1B4Zxek3nHyMjqHNY8TjWJP7hhFGZjMSqmWwwgzgpJq0_aem_AdIwN47JKoyCrb-yNR9ZKu_NppfXeymaqeZunhHAGLzOF7JXc_0X_ICI6FQ5K8iq30HDFBhYJbgOxA7PhMtXM4_b&h=AT0lk2c5Tdj5ZCbUuao7pwToMCuXN9Q7YJulUZjnixcY5ot6z8clXDVjobKQggyS1Enk3nMzoB6Qz_ndubaRnPeAQRSk6E3n2bIfeEljXijRaTiwiWY3UMsm5h-90UIkMA&__tn__=-UK-R&c[0]=AT08j73l0xJ0QOU-Z7iloXYdwlme52dGb-cXDw-2auT3IwS0NIPbcAKLjPNoIBNH65AQfb9-7ec3SXSw9C8FdYiF74nyzfio6nbZQ9wBEy7IJ1RcaJpkvjscs00JcZM5zXGgHi9SWIGcMaedqXKKeXyqY2zxMgbZnX9vC3VU97zidQl-qEOSNw)
+- [Soptify](https://open.spotify.com/track/2JBvAB9MRddsTnvKPxO1bk?si=It6EgBy-R_y7pWvqBc0MnA)
+- [KKBOX](https://www.kkbox.com/tw/tc/song/CrWTZ6Dxa7_3OYWsoA)
 
 I recently heard a song that I noted down because it stood out to me. I remembered it again when I saw that there would be a performance at 和平島. My first impression was that the chorus was so high-pitched that it made me worry about her live performance. Overall, the song is richly arranged with some melodies that have an ancient feel to them.
 
